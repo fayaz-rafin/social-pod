@@ -28,7 +28,18 @@ export default function PodDetailsPage() {
   useEffect(() => {
     const stored = localStorage.getItem('groceryPlan');
     if (stored) {
-      setPlan(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      parsed.budget = Number(parsed.budget) || 0;
+      if (parsed.groceries) {
+        parsed.groceries = parsed.groceries.map((item: any) => ({
+          ...item,
+          price: Number(item.price) || 0,
+        }));
+        parsed.total = parsed.groceries.reduce((sum: number, item: any) => sum + item.price, 0);
+      } else {
+        parsed.total = 0;
+      }
+      setPlan(parsed);
     }
   }, []);
 
@@ -65,11 +76,11 @@ export default function PodDetailsPage() {
       {/* Spending & Budget Cards */}
       <div className="px-6 mt-4 flex gap-4">
         <div className="flex-1 bg-green-500 rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">${plan.total.toFixed(2)}</span>
+          <span className="text-3xl font-black text-white">${typeof plan.total === 'number' ? plan.total.toFixed(2) : Number(plan.total || 0).toFixed(2)}</span>
           <span className="text-lg text-white">in spending</span>
         </div>
         <div className="flex-1 bg-black rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">${plan.budget.toFixed(2)}</span>
+          <span className="text-3xl font-black text-white">${typeof plan.budget === 'number' ? plan.budget.toFixed(2) : Number(plan.budget || 0).toFixed(2)}</span>
           <span className="text-lg text-white">original budget</span>
         </div>
       </div>
@@ -85,12 +96,12 @@ export default function PodDetailsPage() {
                 <div className="text-lg font-bold text-black">{item.name}</div>
                 <div className="text-xs text-gray-500">{item.size}</div>
               </div>
-              <div className="text-lg font-bold text-black">${item.price.toFixed(2)}</div>
+              <div className="text-lg font-bold text-black">${typeof item.price === 'number' ? item.price.toFixed(2) : Number(item.price || 0).toFixed(2)}</div>
             </div>
           ))}
         </div>
         <div className="flex justify-end mt-4">
-          <span className="text-xl font-black text-black">Total: ${plan.total.toFixed(2)}</span>
+          <span className="text-xl font-black text-black">Total: ${typeof plan.total === 'number' ? plan.total.toFixed(2) : Number(plan.total || 0).toFixed(2)}</span>
         </div>
       </div>
 

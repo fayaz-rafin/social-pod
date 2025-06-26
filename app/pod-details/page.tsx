@@ -48,15 +48,12 @@ export default function PodDetailsPage() {
 
       {/* Grocery List */}
       <div className="px-6 mt-8">
-        <h2 className="text-2xl font-black mb-4">Grocery List</h2>
+        <h2 className="text-2xl font-black mb-4 text-gray-300 font-bold">Grocery List</h2>
         <div className="flex flex-col gap-4">
           {groceryList.map((item, i) => (
-            <label key={i} className="flex items-center gap-4">
-              <span className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-                <input type="checkbox" className="w-6 h-6 accent-black" />
-              </span>
+            <div key={i} className="flex items-center gap-4">
               <span className="text-xl font-bold text-black">{item}</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>

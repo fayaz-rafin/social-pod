@@ -10,17 +10,23 @@ type GroceryItem = {
   price: number;
 };
 
+type Goal = {
+  id: string;
+  description: string;
+  type: string;
+  target: number;
+  current: number;
+  completed: boolean;
+  trophy: string;
+};
+
 type GroceryPlan = {
   groceries: GroceryItem[];
   total: number;
   budget: number;
   prompt: string;
+  goals?: Goal[];
 };
-
-const challenges = [
-  'Spend $20 on Grass-Fed Beef',
-  'Buy 2 packs of cheese',
-];
 
 export default function PodDetailsPage() {
   const [plan, setPlan] = useState<GroceryPlan | null>(null);
@@ -42,6 +48,25 @@ export default function PodDetailsPage() {
       setPlan(parsed);
     }
   }, []);
+
+  // Handler to mark a goal as complete
+  const handleCompleteGoal = (goalId: string) => {
+    if (!plan || !plan.goals) return;
+    const updatedGoals = plan.goals.map(goal =>
+      goal.id === goalId ? { ...goal, completed: true, current: goal.target } : goal
+    );
+    const updatedPlan = { ...plan, goals: updatedGoals };
+    setPlan(updatedPlan);
+    localStorage.setItem('groceryPlan', JSON.stringify(updatedPlan));
+    // Award points for completed goal
+    let userPoints = Number(localStorage.getItem('userPoints') || '0');
+    // Only award points if this goal wasn't already completed
+    const justCompleted = plan.goals.find(goal => goal.id === goalId && !goal.completed);
+    if (justCompleted) {
+      userPoints += 100;
+      localStorage.setItem('userPoints', userPoints.toString());
+    }
+  };
 
   if (!plan) {
     return (
@@ -105,31 +130,41 @@ export default function PodDetailsPage() {
         </div>
       </div>
 
-      {/* Challenges */}
+      {/* Dynamic Goals/Achievements */}
       <div className="px-6 mt-10">
         <h2 className="text-2xl font-black mb-2">Mr Broccoli Challenges</h2>
-        <div className="relative mb-6">
-          <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
-            <div className="bg-[#FDE500] h-8 rounded-full flex items-center justify-center" style={{width: '60%'}}>
-              <span className="text-black font-bold text-lg">60% completed</span>
-            </div>
+        {plan.goals && plan.goals.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {plan.goals.map((goal: any) => (
+              <div key={goal.id} className="bg-white rounded-xl shadow p-4 flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="font-bold text-black">{goal.description}</div>
+                  <div className="text-sm text-gray-500">{goal.current} / {goal.target}</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div
+                      className="bg-[#FDE500] h-2 rounded-full"
+                      style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col items-center ml-4">
+                  {goal.completed ? (
+                    <span className="text-3xl">{goal.trophy}</span>
+                  ) : (
+                    <button
+                      className="mt-2 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold"
+                      onClick={() => handleCompleteGoal(goal.id)}
+                    >
+                      Mark Complete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="absolute -right-8 -top-8">
-            <div className="w-16 h-16 rounded-full bg-[#FDE500] flex items-center justify-center shadow-lg">
-              <Image src="/brocoli.svg" alt="Broccoli" width={48} height={48} />
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-4">
-          {challenges.map((item, i) => (
-            <label key={i} className="flex items-center gap-4">
-              <span className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-                <input type="checkbox" className="w-6 h-6 accent-black" />
-              </span>
-              <span className="text-xl font-bold text-black">{item}</span>
-            </label>
-          ))}
-        </div>
+        ) : (
+          <div className="text-gray-400 text-sm mt-4">No goals found for this plan. Try generating a new plan with a more specific prompt!</div>
+        )}
       </div>
 
       {/* Bottom Navigation */}

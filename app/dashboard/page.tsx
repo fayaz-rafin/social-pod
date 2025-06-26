@@ -1,7 +1,7 @@
 'use client';
 
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
 
 const HomeIcon = () => (
@@ -26,7 +26,30 @@ const UsersIcon = () => (
   </svg>
 );
 
+type Goal = {
+  id: string;
+  description: string;
+  type: string;
+  target: number;
+  current: number;
+  completed: boolean;
+  trophy: string;
+};
+
 export default function Dashboard() {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [userPoints, setUserPoints] = useState<number>(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('groceryPlan');
+    if (stored) {
+      const plan = JSON.parse(stored);
+      if (plan.goals) setGoals(plan.goals);
+    }
+    const points = Number(localStorage.getItem('userPoints') || '0');
+    setUserPoints(points);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#ffff] px-8 py-6 w-full max-w-md mx-auto">
       {/* Black Background Section */}
@@ -40,7 +63,7 @@ export default function Dashboard() {
       {/* Points Card - positioned to hang over the black background */}
       <div className="text-center mb-8 -mt-16 flex justify-center">
         <div className="bg-[#EDDF5E] w-full rounded-2xl p-6 flex flex-row gap-2 items-center justify-center text-center shadow-lg border-2 border-[#FDE500]">
-          <div className="text-black text-5xl font-black leading-none">7430</div>
+          <div className="text-black text-5xl font-black leading-none">{userPoints}</div>
           <div className="text-black text-sm font-semibold mt-1">points</div>
         </div>
       </div>
@@ -73,38 +96,32 @@ export default function Dashboard() {
       <div className="mb-6">
         <h3 className="text-black text-lg font-bold mb-4">Trophies</h3>
         <div className="flex gap-3 overflow-x-auto">
-          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
-            <Image
-              src="/trophy-01.svg"
-              alt="Trophy"
-              width={150}
-              height={150}
-            />
-            <span className="text-black text-xs font-semibold mt-2 text-center">Budget King</span>
-            <span className="text-black text-xs text-center mt-1">Bought items under $50</span>
-          </div>
-          
-          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
-            <Image
-              src="/trophy-02.svg"
-              alt="Trophy"
-              width={100}
-              height={100}
-            />
-            <span className="text-black text-xs font-semibold mt-2 text-center">Smart Shopper</span>
-            <span className="text-black text-xs text-center mt-1">Used 5 coupons this week</span>
-          </div>
-          
-          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
-            <Image
-              src="/trophy-03.svg"
-              alt="Trophy"
-              width={150}
-              height={150}
-            />
-            <span className="text-black text-xs font-semibold mt-2 text-center">Goal Setter</span>
-            <span className="text-black text-xs text-center mt-1">Reached monthly target</span>
-          </div>
+          {goals.length === 0 && (
+            <div className="text-gray-400 text-sm">No achievements yet. Complete goals to earn trophies!</div>
+          )}
+          {goals.map((goal, i) => {
+            let trophySrc = "/trophy-01.svg";
+            if (goal.trophy === "🥇") trophySrc = "/trophy-01.svg";
+            else if (goal.trophy === "🥈") trophySrc = "/trophy-02.svg";
+            else if (goal.trophy === "🥉") trophySrc = "/trophy-03.svg";
+            // fallback: use trophy-01 for any other
+            return (
+              <div
+                key={goal.id}
+                className={`flex flex-col items-center ${goal.completed ? 'bg-[#FDE500]' : 'bg-gray-200'} rounded-xl p-4 min-w-[100px] shadow-md transition-all`}
+              >
+                <Image
+                  src={trophySrc}
+                  alt="Trophy"
+                  width={80}
+                  height={80}
+                  className={goal.completed ? '' : 'opacity-30 grayscale'}
+                />
+                <span className={`text-black text-xs font-semibold mt-2 text-center ${goal.completed ? '' : 'opacity-40'}`}>{goal.description}</span>
+                <span className={`text-black text-xs text-center mt-1 ${goal.completed ? '' : 'opacity-40'}`}>{goal.current} / {goal.target}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 

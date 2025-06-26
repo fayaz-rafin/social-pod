@@ -17,6 +17,15 @@ interface GroceryPlan {
   ingredients: Ingredient[];
   totalCost: string;
   tips: string[];
+  goals: {
+    id: string;
+    description: string;
+    type: string;
+    target: number;
+    current: number;
+    completed: boolean;
+    trophy: string;
+  }[];
 }
 
 export default function BrocoliPage() {
@@ -37,6 +46,19 @@ export default function BrocoliPage() {
     }),
     autoplay: true,
   });
+
+  const fetchImagesForIngredients = async (ingredients: Ingredient[]) => {
+    return await Promise.all(ingredients.map(async (item) => {
+      try {
+        const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(item.name)}&search_simple=1&action=process&json=1`);
+        const data = await res.json();
+        const image = data.products?.[0]?.image_front_url || "/noname.png";
+        return { ...item, img: image };
+      } catch {
+        return { ...item, img: "/noname.png" };
+      }
+    }));
+  };
 
   const generatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,11 +82,41 @@ export default function BrocoliPage() {
       }
 
       const plan: GroceryPlan = await response.json();
+      // Inject mock goals for demo/testing
+      const mockGoals = [
+        {
+          id: 'protein_goal',
+          description: 'Eat 100g protein/day',
+          type: 'nutrition',
+          target: 100,
+          current: 0,
+          completed: false,
+          trophy: '🥇',
+        },
+        {
+          id: 'veggie_variety',
+          description: 'Buy 5 different vegetables',
+          type: 'shopping',
+          target: 5,
+          current: 0,
+          completed: false,
+          trophy: '🥈',
+        },
+        {
+          id: 'budget_master',
+          description: 'Stay under $50 budget',
+          type: 'budget',
+          target: 1,
+          current: 0,
+          completed: false,
+          trophy: '🥉',
+        },
+      ];
       setIsFetchingImages(true);
       // Fetch images for each ingredient
       const ingredientsWithImages = await fetchImagesForIngredients(plan.ingredients);
       setIsFetchingImages(false);
-      setGroceryPlan({ ...plan, ingredients: ingredientsWithImages });
+      setGroceryPlan({ ...plan, ingredients: ingredientsWithImages, goals: mockGoals });
       setStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');

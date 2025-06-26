@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import Navbar from '../components/Navbar';
 
 interface GroupGoal {
   id: string;
@@ -352,6 +353,8 @@ export default function GroupPodsPage() {
 
       {/* Bottom spacing for better scroll */}
       <div className="h-20"></div>
+
+      <Navbar />
     </div>
   );
 } 

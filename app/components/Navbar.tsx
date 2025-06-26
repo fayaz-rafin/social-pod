@@ -19,7 +19,15 @@ const navItems = [
     activeColor: 'text-white'
   },
   {
-    label: 'My Pantry',
+    label: 'Group Pods',
+    href: '/grouppods',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="7" cy="10" r="3" stroke="white" strokeWidth="2"/><circle cx="17" cy="10" r="3" stroke="white" strokeWidth="2"/><circle cx="12" cy="17" r="3" stroke="#FDE500" strokeWidth="2"/><path d="M2 20c0-2.21 3.58-4 8-4s8 1.79 8 4" stroke="white" strokeWidth="2"/><path d="M7 13c-2.67 0-8 1.34-8 4v3h22v-3c0-2.66-5.33-4-8-4" stroke="white" strokeWidth="0"/></svg>
+    ),
+    activeColor: 'text-[#FDE500]'
+  },
+  {
+    label: 'Profile',
     href: '/profile',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="white" strokeWidth="2"/><circle cx="9" cy="7" r="4" stroke="white" strokeWidth="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="white" strokeWidth="2"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="white" strokeWidth="2"/></svg>

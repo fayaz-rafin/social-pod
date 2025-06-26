@@ -181,8 +181,13 @@ export default function PlanPage() {
       budget,
       prompt,
       goals,
+      date: new Date().toISOString(),
     };
     localStorage.setItem('groceryPlan', JSON.stringify(planToSave));
+    // Save to history
+    const history = JSON.parse(localStorage.getItem('groceryHistory') || '[]');
+    history.push(planToSave);
+    localStorage.setItem('groceryHistory', JSON.stringify(history));
     router.push('/pod-details');
   };
 

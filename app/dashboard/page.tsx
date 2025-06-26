@@ -39,6 +39,8 @@ type Goal = {
 export default function Dashboard() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [userPoints, setUserPoints] = useState<number>(0);
+  const [history, setHistory] = useState<any[]>([]);
+  const [totalSpent, setTotalSpent] = useState<number>(0);
 
   useEffect(() => {
     const stored = localStorage.getItem('groceryPlan');
@@ -48,6 +50,9 @@ export default function Dashboard() {
     }
     const points = Number(localStorage.getItem('userPoints') || '0');
     setUserPoints(points);
+    const h = JSON.parse(localStorage.getItem('groceryHistory') || '[]');
+    setHistory(h);
+    setTotalSpent(h.reduce((sum: number, entry: any) => sum + (entry.total || 0), 0));
   }, []);
 
   return (
@@ -71,8 +76,8 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-black rounded-xl p-4 shadow-md">
-          <div className="text-white text-2xl font-bold">$57</div>
-          <div className="text-white text-sm">Savings</div>
+          <div className="text-white text-2xl font-bold">${totalSpent.toFixed(2)}</div>
+          <div className="text-white text-sm">Total Spent</div>
         </div>
         <div className="bg-black rounded-xl p-4 shadow-md">
           <div className="text-white text-2xl font-bold">$213</div>

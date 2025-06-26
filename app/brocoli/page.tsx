@@ -58,8 +58,8 @@ export default function BrocoliPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between bg-[#FDE500] px-4 pt-6 pb-6 w-full max-w-md mx-auto">
-      {/* Top bar (fake status bar for mobile look) */}
+    <div className="min-h-screen flex flex-col items-center justify-between bg-[#FDE500] px-6 pt-6 pb-6 w-full max-w-md mx-auto">
+      {/* Top bar (fake status bar for mobile look)
       <div className="w-full flex justify-between items-center mb-2">
         <span className="text-xs font-semibold tracking-wide">9:41</span>
         <div className="flex gap-1 items-center">
@@ -71,33 +71,25 @@ export default function BrocoliPage() {
           <span className="inline-block w-4 h-2 bg-black rounded-sm"></span>
           <span className="inline-block w-2 h-2 bg-black rounded-full"></span>
         </div>
-      </div>
+      </div> */}
       {step === 1 ? (
         <>
           {/* Title and subtitle */}
-          <div className="w-full flex flex-col items-start mt-2">
-            <h1 className="text-5xl font-extrabold leading-none text-black">Create<br/>A Pod</h1>
-            <p className="text-lg font-semibold text-black mt-2">Tell Mr Brocoli what you need</p>
+          <div className="w-full flex flex-col items-start mt-5">
+            <h1 className="text-7xl font-extrabold leading-none text-black">Create<br/>A Pod</h1>
+            <p className="text-lg font-extrabold text-black mt-1">Tell Mr Brocoli what you are cooking</p>
+            <p className="text-lg font-semibold text-black mt-1">and your needs</p>
           </div>
           {/* Mascot */}
           <div className="flex justify-center w-full my-6">
-            <Image src="/brocoli.svg" alt="Mr Brocoli" width={132} height={137} priority />
+            <Image src="/brocoli.svg" alt="Mr Brocoli" width={180} height={187} priority />
           </div>
-          {/* Input area */}
-          <form className="w-full flex flex-col items-center flex-1" onSubmit={generatePlan}>
-            <textarea
-              className="w-full min-h-[120px] rounded-2xl p-4 text-lg font-semibold text-black bg-white placeholder:text-black/60 focus:outline-none resize-none shadow-md"
-              placeholder="I want to bulk up"
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              disabled={isLoading}
-            />
-            
-            {/* Budget slider */}
-            <div className="w-full mt-4">
+
+                      {/* Budget slider */}
+              <div className="w-full mt-4 mb-4">
               <div className="flex items-end gap-2 mb-2">
-                <span className="text-2xl font-extrabold text-black">${budget}</span>
-                <span className="text-sm font-bold text-black mb-1">Budget</span>
+                <span className="text-5xl font-extrabold text-black">${budget}</span>
+                <span className="text-xl font-bold text-black mb-1">Budget</span>
               </div>
               <input
                 type="range"
@@ -106,11 +98,23 @@ export default function BrocoliPage() {
                 step={5}
                 value={budget}
                 onChange={e => setBudget(Number(e.target.value))}
-                className="w-full accent-black h-2 rounded-lg appearance-none bg-white shadow-md"
+                className="w-full accent-black h-10 rounded-lg appearance-none bg-white shadow-md [&::-webkit-slider-thumb]:w-15 [&::-webkit-slider-thumb]:h-15 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:cursor-pointer"
                 style={{ accentColor: '#171717' }}
                 disabled={isLoading}
               />
             </div>
+
+          {/* Input area */}
+          <form className="w-full flex flex-col items-center flex-1" onSubmit={generatePlan}>
+            <textarea
+              className="w-full min-h-[200px] rounded-2xl p-4 text-lg font-semibold text-black bg-white placeholder:text-black/60 focus:outline-none resize-none shadow-md"
+              placeholder="I want to bulk up"
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              disabled={isLoading}
+            />
+            
+
 
             {error && (
               <div className="w-full mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
@@ -130,20 +134,28 @@ export default function BrocoliPage() {
       ) : (
         <>
           {/* Plan Step */}
-          <div className="w-full flex flex-col items-start mt-2">
-            <h1 className="text-5xl font-extrabold leading-none text-black">Plan</h1>
-            <p className="text-lg font-semibold text-black mt-2">Heaaar me out!</p>
+
+          <div className="flex flex-row items-start justify-between w-full">
+            <div className="flex flex-col items-start gap-1">
+              <h1 className="text-6xl font-extrabold leading-none text-black">Plan</h1>
+              <p className="text-lg font-semibold text-black">Heaaar me out!</p>
+            </div>
+
+            <div className="flex flex-col items-end gap-1">
+                <Image src="/brocoli.svg" alt="Mr Brocoli" width={80} height={83} />         
+            </div>
           </div>
+
           
           <div className="w-full flex flex-col mt-6 flex-1 overflow-y-auto">
             <div className="flex items-end gap-2 mb-4">
-              <span className="text-3xl font-extrabold text-black">${groceryPlan?.totalCost || budget}</span>
+              <span className="text-7xl font-extrabold text-black">${groceryPlan?.totalCost || budget}</span>
               <span className="text-lg font-bold text-black mb-1">Total Cost</span>
             </div>
             
-            <div className="w-full bg-white rounded-2xl p-4 shadow-md mb-4">
-              <h3 className="font-bold text-black mb-2">Summary:</h3>
-              <p className="text-black">{groceryPlan?.summary || "Your grocery trip is going to be protein filled, with vegetables and meat"}</p>
+            <div className="w-full min-h-[150px] bg-white rounded-2xl p-4 shadow-md mb-4 flex items-center justify-center">
+              {/* <h3 className="font-bold text-3xl text-black mb-2">Summary:</h3> */}
+              <p className="font-extrabold text-black text-xl">{groceryPlan?.summary || "Your grocery trip is going to be protein filled, with vegetables and meat"}</p>
             </div>
 
             {groceryPlan?.ingredients && groceryPlan.ingredients.length > 0 && (
@@ -183,9 +195,9 @@ export default function BrocoliPage() {
             <div className="flex flex-col gap-3 mt-4">
               <button
                 onClick={() => setStep(1)}
-                className="w-full bg-gray-600 text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform"
+                className="w-full bg-black text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform"
               >
-                Create New Plan
+                Redo Plan
               </button>
               <button
                 className="w-full bg-black text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform"

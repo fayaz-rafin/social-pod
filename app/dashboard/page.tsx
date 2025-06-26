@@ -37,25 +37,32 @@ const UsersIcon = () => (
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-[#FDE500] px-4 py-6 w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="text-black text-lg font-semibold mb-2">Good evening, Suzanna</div>
-        <div className="bg-black rounded-2xl p-6 text-center shadow-lg">
-          <div className="text-[#FDE500] text-5xl font-black leading-none">7430</div>
-          <div className="text-[#FDE500] text-sm font-semibold mt-1">points</div>
+    <div className="min-h-screen bg-[#ffff] px-10 py-6 w-full max-w-md mx-auto">
+      {/* Black Background Section */}
+      <div className="bg-black pb-12 -mx-4 -mt-6 px-4 pt-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="text-white text-lg font-semibold mb-2 text-left">Good evening, Suzanna</div>
+        </div>
+      </div>
+
+      {/* Points Card - positioned to hang over the black background */}
+      <div className="text-center mb-8 -mt-16 flex justify-center">
+        <div className="bg-[#EDDF5E] w-full rounded-2xl p-6 flex flex-row gap-2 items-center justify-center text-center shadow-lg border-2 border-[#FDE500]">
+          <div className="text-black text-5xl font-black leading-none">7430</div>
+          <div className="text-black text-sm font-semibold mt-1">points</div>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-md">
-          <div className="text-black text-2xl font-bold">$57</div>
-          <div className="text-black text-sm">Savings</div>
+        <div className="bg-black rounded-xl p-4 shadow-md">
+          <div className="text-white text-2xl font-bold">$57</div>
+          <div className="text-white text-sm">Savings</div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md">
-          <div className="text-black text-2xl font-bold">$213</div>
-          <div className="text-black text-sm">Monthly</div>
+        <div className="bg-black rounded-xl p-4 shadow-md">
+          <div className="text-white text-2xl font-bold">$213</div>
+          <div className="text-white text-sm">Monthly</div>
         </div>
       </div>
 

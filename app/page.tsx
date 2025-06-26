@@ -44,7 +44,7 @@ export default function Home() {
             Start My Pod
           </button>
         </Link>
-        <Link href="/auth" className="text-black font-bold text-lg underline">
+        <Link href="/auth/signup" className="text-black font-bold text-lg underline">
           or create account
         </Link>
       </div>

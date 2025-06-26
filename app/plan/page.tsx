@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 
-const groceries = [
+const demoGroceries = [
   {
     name: "No Name's Diced Tomatoes",
     size: "700 g",
@@ -78,14 +78,13 @@ export default function PlanPage() {
   });
 
   const handleFinalizePlan = () => {
-    const total = groceries.reduce((sum, item) => sum + (item.price || 0), 0);
-    const plan = {
+    const planToSave = {
       groceries,
       total,
-      budget: BUDGET,
+      budget,
       prompt,
     };
-    localStorage.setItem('groceryPlan', JSON.stringify(plan));
+    localStorage.setItem('groceryPlan', JSON.stringify(planToSave));
     router.push('/pod-details');
   };
 
@@ -115,12 +114,12 @@ export default function PlanPage() {
 
       {/* Grocery Grid */}
       <div className="flex-1 px-3 py-6 grid grid-cols-2 gap-4">
-        {groceries.map((item, i) => (
+        {groceries.map((item: any, i: number) => (
           <div key={i} className="bg-white rounded-2xl shadow-md flex flex-col items-center p-4 relative">
             <button className="absolute top-2 right-2 w-7 h-7 bg-[#FDE500] rounded-full flex items-center justify-center text-2xl font-black text-black">-</button>
-            <Image src={item.img} alt={item.name} width={80} height={80} className="mb-2" />
+            <img src={item.img} alt={item.name} width={80} height={80} className="mb-2 rounded object-contain bg-gray-100" />
             <div className="text-sm font-bold text-black text-center mb-1">{item.name}</div>
-            <div className="text-xs text-black text-center">{item.size}</div>
+            <div className="text-xs text-black text-center">{item.size || item.quantity}</div>
           </div>
         ))}
       </div>

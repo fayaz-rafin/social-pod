@@ -9,6 +9,7 @@ interface Ingredient {
   quantity: string;
   price: string;
   category: string;
+  img?: string;
 }
 
 interface GroceryPlan {
@@ -25,6 +26,7 @@ export default function BrocoliPage() {
   const [groceryPlan, setGroceryPlan] = useState<GroceryPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFetchingImages, setIsFetchingImages] = useState(false);
   const router = useRouter();
 
   const { RiveComponent } = useRive({
@@ -58,7 +60,11 @@ export default function BrocoliPage() {
       }
 
       const plan: GroceryPlan = await response.json();
-      setGroceryPlan(plan);
+      setIsFetchingImages(true);
+      // Fetch images for each ingredient
+      const ingredientsWithImages = await fetchImagesForIngredients(plan.ingredients);
+      setIsFetchingImages(false);
+      setGroceryPlan({ ...plan, ingredients: ingredientsWithImages });
       setStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -172,15 +178,24 @@ export default function BrocoliPage() {
               <p className="font-extrabold text-black text-xl">{groceryPlan?.summary || "Your grocery trip is going to be protein filled, with vegetables and meat"}</p>
             </div>
 
+            {isFetchingImages && (
+              <div className="w-full flex justify-center items-center my-4">
+                <span className="text-black font-bold text-lg">Fetching grocery images...</span>
+              </div>
+            )}
+
             {groceryPlan?.ingredients && groceryPlan.ingredients.length > 0 && (
               <div className="w-full bg-white rounded-2xl p-4 shadow-md mb-4">
                 <h3 className="font-bold text-black mb-3">Ingredients:</h3>
                 <div className="space-y-2">
                   {groceryPlan.ingredients.map((ingredient, index) => (
                     <div key={index} className="flex justify-between items-center border-b border-gray-200 pb-2">
-                      <div>
-                        <p className="font-semibold text-black">{ingredient.name}</p>
-                        <p className="text-sm text-gray-600">{ingredient.quantity} • {ingredient.category}</p>
+                      <div className="flex items-center gap-3">
+                        <img src={ingredient.img} alt={ingredient.name} className="w-10 h-10 rounded object-contain bg-gray-100" />
+                        <div>
+                          <p className="font-semibold text-black">{ingredient.name}</p>
+                          <p className="text-sm text-gray-600">{ingredient.quantity} • {ingredient.category}</p>
+                        </div>
                       </div>
                       <span className="font-bold text-black">${ingredient.price}</span>
                     </div>
@@ -215,12 +230,17 @@ export default function BrocoliPage() {
               >
                 Redo Plan
               </button>
-              <button
-                className="w-full bg-black text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform"
-                onClick={() => router.push(`/plan?prompt=${encodeURIComponent(prompt)}`)}
-              >
-                Generate Grocery List
-              </button>
+              {groceryPlan && !isFetchingImages && (
+                <button
+                  className="w-full bg-black text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform"
+                  onClick={() => {
+                    localStorage.setItem('groceryPlan', JSON.stringify(groceryPlan));
+                    router.push(`/plan?prompt=${encodeURIComponent(prompt)}`);
+                  }}
+                >
+                  Generate Grocery List
+                </button>
+              )}
             </div>
           </div>
         </>

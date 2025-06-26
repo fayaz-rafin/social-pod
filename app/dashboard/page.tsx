@@ -1,0 +1,177 @@
+'use client';
+
+import Image from "next/image";
+import React from "react";
+
+const TrophyIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 6h12v3a6 6 0 0 1-12 0V6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    <path d="M12 18v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M9 21h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M4 8v1a4 4 0 0 0 4 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    <path d="M20 8v1a4 4 0 0 1-4 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+  </svg>
+);
+
+const HomeIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2"/>
+    <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const ChatIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="2"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+export default function Dashboard() {
+  return (
+    <div className="min-h-screen bg-[#FDE500] px-4 py-6 w-full max-w-md mx-auto">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="text-black text-lg font-semibold mb-2">Good evening, Suzanna</div>
+        <div className="bg-black rounded-2xl p-6 text-center shadow-lg">
+          <div className="text-[#FDE500] text-5xl font-black leading-none">7430</div>
+          <div className="text-[#FDE500] text-sm font-semibold mt-1">points</div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-white rounded-xl p-4 shadow-md">
+          <div className="text-black text-2xl font-bold">$57</div>
+          <div className="text-black text-sm">Savings</div>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-md">
+          <div className="text-black text-2xl font-bold">$213</div>
+          <div className="text-black text-sm">Monthly</div>
+        </div>
+      </div>
+
+      {/* Progress Section */}
+      <div className="bg-white rounded-xl p-6 mb-6 shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-black font-semibold">Goals</span>
+          <span className="text-black text-sm">68%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+          <div className="bg-[#FDE500] h-3 rounded-full" style={{ width: '68%' }}></div>
+        </div>
+        <div className="text-black text-sm">Keep it up! You're doing great with your budget</div>
+      </div>
+
+      {/* Trophies Section */}
+      <div className="mb-6">
+        <h3 className="text-black text-lg font-bold mb-4">Trophies</h3>
+        <div className="flex gap-3 overflow-x-auto">
+          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
+            <TrophyIcon />
+            <span className="text-black text-xs font-semibold mt-2 text-center">Budget King</span>
+            <span className="text-black text-xs text-center mt-1">Bought items under $50</span>
+          </div>
+          
+          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
+            <TrophyIcon />
+            <span className="text-black text-xs font-semibold mt-2 text-center">Smart Shopper</span>
+            <span className="text-black text-xs text-center mt-1">Used 5 coupons this week</span>
+          </div>
+          
+          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
+            <TrophyIcon />
+            <span className="text-black text-xs font-semibold mt-2 text-center">Goal Setter</span>
+            <span className="text-black text-xs text-center mt-1">Reached monthly target</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Meals Section */}
+      <div className="mb-20">
+        <h3 className="text-black text-lg font-bold mb-4">Meals of the Week</h3>
+        <div className="flex gap-3 overflow-x-auto">
+          <div className="flex flex-col items-center bg-white rounded-xl p-4 min-w-[100px] shadow-md">
+            <div className="w-12 h-12 bg-[#FDE500] rounded-full flex items-center justify-center mb-2">
+              <Image
+                src="/brocoli.svg"
+                alt="broccoli"
+                width={24}
+                height={24}
+              />
+            </div>
+            <span className="text-black text-xs font-semibold text-center">Broccoli Stir Fry</span>
+            <span className="text-black text-xs text-center mt-1">Healthy & Budget Friendly</span>
+          </div>
+          
+          <div className="flex flex-col items-center bg-white rounded-xl p-4 min-w-[100px] shadow-md">
+            <div className="w-12 h-12 bg-[#FDE500] rounded-full flex items-center justify-center mb-2">
+              <Image
+                src="/brocoli.svg"
+                alt="broccoli"
+                width={24}
+                height={24}
+              />
+            </div>
+            <span className="text-black text-xs font-semibold text-center">Green Smoothie</span>
+            <span className="text-black text-xs text-center mt-1">Perfect breakfast choice</span>
+          </div>
+          
+          <div className="flex flex-col items-center bg-white rounded-xl p-4 min-w-[100px] shadow-md">
+            <div className="w-12 h-12 bg-[#FDE500] rounded-full flex items-center justify-center mb-2">
+              <Image
+                src="/brocoli.svg"
+                alt="broccoli"
+                width={24}
+                height={24}
+              />
+            </div>
+            <span className="text-black text-xs font-semibold text-center">Veggie Bowl</span>
+            <span className="text-black text-xs text-center mt-1">Nutritious dinner</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md">
+        <div className="bg-black rounded-t-3xl px-6 py-4">
+          <div className="flex justify-around items-center">
+            <div className="flex flex-col items-center">
+              <HomeIcon />
+              <span className="text-white text-xs mt-1">Dashboard</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <ChatIcon />
+              <span className="text-white text-xs mt-1">The Pod</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <UsersIcon />
+              <span className="text-white text-xs mt-1">My Party</span>
+            </div>
+            
+            <div className="bg-[#FDE500] rounded-full p-2">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <Image
+                  src="/brocoli.svg"
+                  alt="broccoli"
+                  width={32}
+                  height={32}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 

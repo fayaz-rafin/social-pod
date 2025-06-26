@@ -2,6 +2,7 @@
 import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
+import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 
 interface Ingredient {
   name: string;
@@ -25,6 +26,15 @@ export default function BrocoliPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const { RiveComponent } = useRive({
+    src: '/broccoli.riv',
+    layout: new Layout({
+      fit: Fit.Contain,
+      alignment: Alignment.Center,
+    }),
+    autoplay: true,
+  });
 
   const generatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +92,9 @@ export default function BrocoliPage() {
           </div>
           {/* Mascot */}
           <div className="flex justify-center w-full my-6">
-            <Image src="/brocoli.svg" alt="Mr Brocoli" width={180} height={187} priority />
+            <div style={{ width: '180px', height: '187px' }}>
+              <RiveComponent />
+            </div>
           </div>
 
                       {/* Budget slider */}
@@ -142,7 +154,9 @@ export default function BrocoliPage() {
             </div>
 
             <div className="flex flex-col items-end gap-1">
-                <Image src="/brocoli.svg" alt="Mr Brocoli" width={80} height={83} />         
+                <div style={{ width: '80px', height: '83px' }}>
+                  <RiveComponent />
+                </div>         
             </div>
           </div>
 
@@ -188,7 +202,9 @@ export default function BrocoliPage() {
 
             <div className="relative mb-4">
               <div className="absolute right-0 bottom-0">
-                <Image src="/brocoli.svg" alt="Mr Brocoli" width={80} height={83} />
+                <div style={{ width: '80px', height: '83px' }}>
+                  <RiveComponent />
+                </div>
               </div>
             </div>
             

@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 
 const groceries = [
   {
@@ -67,6 +68,15 @@ export default function PlanPage() {
   const searchParams = useSearchParams();
   const prompt = searchParams.get('prompt') || 'List for cooking pasta for bulking';
 
+  const { RiveComponent } = useRive({
+    src: '/broccoli.riv',
+    layout: new Layout({
+      fit: Fit.Contain,
+      alignment: Alignment.Center,
+    }),
+    autoplay: true,
+  });
+
   const handleFinalizePlan = () => {
     const total = groceries.reduce((sum, item) => sum + (item.price || 0), 0);
     const plan = {
@@ -88,7 +98,9 @@ export default function PlanPage() {
             <h1 className="text-5xl font-black text-black leading-none mb-2">Plan</h1>
             <p className="text-xl font-bold text-black mb-2">{prompt}</p>
           </div>
-          <Image src="/brocoli.svg" alt="Broccoli" width={64} height={64} className="ml-2" />
+          <div style={{ width: '100px', height: '100px' }}>
+            <RiveComponent />
+          </div>
         </div>
       </div>
 

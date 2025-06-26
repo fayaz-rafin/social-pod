@@ -34,20 +34,33 @@ export async function POST(request: NextRequest) {
               }
             ],
             "totalCost": "45.50",
-            "tips": ["Helpful tip 1", "Helpful tip 2"]
+            "tips": ["Helpful tip 1", "Helpful tip 2", "Meal suggestion 1", "Meal suggestion 2"]
           }
 
           Rules:
           - Respond ONLY with valid JSON
-          - Keep prices realistic and within budget
-          - Include 5-8 ingredients
+          - Analyze the user's goal to determine if they mentioned a specific dish or general dietary goal
+          - If NO specific dish is mentioned (goals like "bulk up", "lose weight", "eat healthy", "save money"):
+            * Select versatile ingredients that support their goal
+            * Include 2-3 specific MEAL SUGGESTIONS in the tips array (e.g., "Try making chicken stir-fry with these ingredients", "Make protein smoothies with the protein powder and fruits")
+          - If a SPECIFIC dish is mentioned, focus ingredients on that dish
+          - Consider the budget level:
+            * Low budget ($10-30): Focus on budget-friendly staples, bulk items, seasonal produce
+            * Medium budget ($30-80): Include some premium ingredients, variety of proteins
+            * High budget ($80+): Include premium/organic options, variety of fresh ingredients
+          - Include 6-10 ingredients based on budget
           - Price should be number as string (e.g., "5.99")
-          - Categories: Protein, Vegetable, Grain, Dairy, Pantry, Herb/Spice
-          - Make sure total cost is close to but under the budget`
+          - Categories: Protein, Vegetable, Grain, Dairy, Pantry, Herb/Spice, Fruit
+          - Make sure total cost is 85-95% of the budget to leave room for extras
+          - Always include practical shopping and meal prep tips`
         },
         {
           role: "user",
-          content: `Goal: ${prompt}\nBudget: $${budget}\n\nCreate a grocery plan JSON response.`
+          content: `Goal: ${prompt}
+Budget: $${budget}
+Budget Level: ${budget <= 30 ? 'Low - Focus on budget-friendly essentials' : budget <= 80 ? 'Medium - Balance of quality and value' : 'High - Premium options available'}
+
+Create a grocery plan JSON response that matches my goal and budget level.`
         }
       ],
       model: "llama3-8b-8192",
@@ -100,37 +113,72 @@ export async function POST(request: NextRequest) {
       const summaryMatch = cleanedResponse.match(/"summary":\s*"([^"]+)"/);
       const summary = summaryMatch ? summaryMatch[1] : "A grocery plan has been created for your dietary goals.";
       
-      // Create a fallback structured response
+      // Create a fallback structured response based on goal and budget
+      const isLowBudget = budget <= 30;
+      const isHighBudget = budget > 80;
+      const isBulkingGoal = prompt.toLowerCase().includes('bulk') || prompt.toLowerCase().includes('muscle') || prompt.toLowerCase().includes('gain');
+      const isWeightLossGoal = prompt.toLowerCase().includes('lose') || prompt.toLowerCase().includes('diet') || prompt.toLowerCase().includes('lean');
+      
+      let fallbackIngredients = [
+        {
+          name: isLowBudget ? "Chicken Thighs" : "Chicken Breast",
+          quantity: "1 lb",
+          price: isLowBudget ? "3.99" : "6.99",
+          category: "Protein"
+        },
+        {
+          name: isLowBudget ? "Brown Rice" : isHighBudget ? "Quinoa" : "Rice",
+          quantity: isLowBudget ? "3 lbs" : "2 lbs",
+          price: isLowBudget ? "2.49" : isHighBudget ? "5.99" : "3.49",
+          category: "Grain"
+        },
+        {
+          name: isLowBudget ? "Frozen Mixed Vegetables" : "Fresh Broccoli",
+          quantity: isLowBudget ? "2 bags" : "2 heads",
+          price: isLowBudget ? "2.99" : "3.99",
+          category: "Vegetable"
+        },
+        {
+          name: "Olive Oil",
+          quantity: "1 bottle",
+          price: isHighBudget ? "7.99" : "4.99",
+          category: "Pantry"
+        }
+      ];
+      
+      if (isBulkingGoal && !isLowBudget) {
+        fallbackIngredients.push({
+          name: "Greek Yogurt",
+          quantity: "32 oz",
+          price: "5.99",
+          category: "Dairy"
+        });
+      }
+      
+      if (isWeightLossGoal) {
+        fallbackIngredients.push({
+          name: "Spinach",
+          quantity: "5 oz bag",
+          price: "2.99",
+          category: "Vegetable"
+        });
+      }
+      
+      const mealSuggestions = isBulkingGoal 
+        ? ["Try making protein-rich stir-fry with chicken and rice", "Make Greek yogurt parfaits for extra protein"]
+        : isWeightLossGoal 
+        ? ["Make large salads with spinach and grilled chicken", "Try roasted vegetable bowls with minimal oil"]
+        : ["Make simple one-pot meals with these ingredients", "Try meal prepping for the week"];
+      
       parsedResponse = {
-        summary: summary,
-        ingredients: [
-          {
-            name: "Chicken Breast",
-            quantity: "1 lb",
-            price: "6.99",
-            category: "Protein"
-          },
-          {
-            name: "Rice",
-            quantity: "2 lbs",
-            price: "3.49",
-            category: "Grain"
-          },
-          {
-            name: "Mixed Vegetables",
-            quantity: "1 bag",
-            price: "2.99",
-            category: "Vegetable"
-          },
-          {
-            name: "Olive Oil",
-            quantity: "1 bottle",
-            price: "4.99",
-            category: "Pantry"
-          }
-        ],
+        summary: summary || `A ${budget <= 30 ? 'budget-friendly' : budget > 80 ? 'premium' : 'balanced'} grocery plan for your ${isBulkingGoal ? 'muscle-building' : isWeightLossGoal ? 'weight-loss' : 'healthy eating'} goals.`,
+        ingredients: fallbackIngredients,
         totalCost: (budget * 0.9).toFixed(2),
-        tips: ["Shop during sales for better prices", "Buy in bulk for non-perishables"]
+        tips: [
+          isLowBudget ? "Shop at discount stores for better prices" : "Look for sales on premium items",
+          "Buy in bulk for non-perishables to save money",
+          ...mealSuggestions
+        ]
       };
     }
 

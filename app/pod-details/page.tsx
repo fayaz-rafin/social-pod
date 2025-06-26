@@ -1,25 +1,89 @@
 'use client';
 import Image from 'next/image';
+import Navbar from '../components/Navbar';
+import { useEffect, useState } from 'react';
 
-const groceryList = [
-  'Diced Tomatoes',
-  'Marble Cheese',
-  'Olive Oil',
-  'Milk',
-];
+type GroceryItem = {
+  name: string;
+  size: string;
+  img: string;
+  price: number;
+};
 
-const challenges = [
-  'Spend $20 on Grass-Fed Beef',
-  'Buy 2 packs of cheese',
-];
+type Goal = {
+  id: string;
+  description: string;
+  type: string;
+  target: number;
+  current: number;
+  completed: boolean;
+  trophy: string;
+};
+
+type GroceryPlan = {
+  groceries: GroceryItem[];
+  total: number;
+  budget: number;
+  prompt: string;
+  goals?: Goal[];
+};
 
 export default function PodDetailsPage() {
+  const [plan, setPlan] = useState<GroceryPlan | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('groceryPlan');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      parsed.budget = Number(parsed.budget) || 0;
+      if (parsed.groceries) {
+        parsed.groceries = parsed.groceries.map((item: any) => ({
+          ...item,
+          price: Number(item.price) || 0,
+        }));
+        parsed.total = parsed.groceries.reduce((sum: number, item: any) => sum + item.price, 0);
+      } else {
+        parsed.total = 0;
+      }
+      setPlan(parsed);
+    }
+  }, []);
+
+  // Handler to mark a goal as complete
+  const handleCompleteGoal = (goalId: string) => {
+    if (!plan || !plan.goals) return;
+    const updatedGoals = plan.goals.map(goal =>
+      goal.id === goalId ? { ...goal, completed: true, current: goal.target } : goal
+    );
+    const updatedPlan = { ...plan, goals: updatedGoals };
+    setPlan(updatedPlan);
+    localStorage.setItem('groceryPlan', JSON.stringify(updatedPlan));
+    // Award points for completed goal
+    let userPoints = Number(localStorage.getItem('userPoints') || '0');
+    // Only award points if this goal wasn't already completed
+    const justCompleted = plan.goals.find(goal => goal.id === goalId && !goal.completed);
+    if (justCompleted) {
+      userPoints += 100;
+      localStorage.setItem('userPoints', userPoints.toString());
+    }
+  };
+
+  if (!plan) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-black text-xl font-bold">No plan found. Please finalize a plan first.</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col pb-32 max-w-md mx-auto">
       {/* Black Header */}
       <div className="bg-black rounded-b-3xl px-6 pt-8 pb-6 flex items-center justify-between relative">
         <div className="text-white text-2xl font-bold leading-tight">
-          List for cooking pasta<br />for bulking
+          {plan.prompt.split(/\n|<br\s*\/?>/).map((line, i) => (
+            <span key={i}>{line}<br /></span>
+          ))}
         </div>
         <div className="bg-white rounded-xl shadow-md p-2">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#000" strokeWidth="2"/><path d="M8 2v4M16 2v4M8 18v4M16 18v4" stroke="#000" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -37,11 +101,11 @@ export default function PodDetailsPage() {
       {/* Spending & Budget Cards */}
       <div className="px-6 mt-4 flex gap-4">
         <div className="flex-1 bg-green-500 rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">$40</span>
+          <span className="text-3xl font-black text-white">${typeof plan.total === 'number' ? plan.total.toFixed(2) : Number(plan.total || 0).toFixed(2)}</span>
           <span className="text-lg text-white">in spending</span>
         </div>
         <div className="flex-1 bg-black rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">$45</span>
+          <span className="text-3xl font-black text-white">${typeof plan.budget === 'number' ? plan.budget.toFixed(2) : Number(plan.budget || 0).toFixed(2)}</span>
           <span className="text-lg text-white">original budget</span>
         </div>
       </div>
@@ -49,40 +113,58 @@ export default function PodDetailsPage() {
       {/* Grocery List */}
       <div className="px-6 mt-8">
         <h2 className="text-2xl font-black mb-4 text-gray-300 font-bold">Grocery List</h2>
-        <div className="flex flex-col gap-4">
-          {groceryList.map((item, i) => (
-            <div key={i} className="flex items-center gap-4">
-              <span className="text-xl font-bold text-black">{item}</span>
+        <div className="flex flex-col gap-4 max-h-60 overflow-y-auto pr-2">
+          {plan.groceries.map((item, i) => (
+            <div key={i} className="flex items-center gap-4 bg-white rounded-xl shadow p-3">
+              <img src={item.img} alt={item.name} className="w-12 h-12 rounded-lg object-contain" />
+              <div className="flex-1">
+                <div className="text-lg font-bold text-black">{item.name}</div>
+                <div className="text-xs text-gray-500">{item.size}</div>
+              </div>
+              <div className="text-lg font-bold text-black">${typeof item.price === 'number' ? item.price.toFixed(2) : Number(item.price || 0).toFixed(2)}</div>
             </div>
           ))}
+        </div>
+        <div className="flex justify-end mt-4">
+          <span className="text-xl font-black text-black">Total: ${typeof plan.total === 'number' ? plan.total.toFixed(2) : Number(plan.total || 0).toFixed(2)}</span>
         </div>
       </div>
 
-      {/* Challenges */}
+      {/* Dynamic Goals/Achievements */}
       <div className="px-6 mt-10">
         <h2 className="text-2xl font-black mb-2">Mr Broccoli Challenges</h2>
-        <div className="relative mb-6">
-          <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
-            <div className="bg-[#FDE500] h-8 rounded-full flex items-center justify-center" style={{width: '60%'}}>
-              <span className="text-black font-bold text-lg">60% completed</span>
-            </div>
+        {plan.goals && plan.goals.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {plan.goals.map((goal: any) => (
+              <div key={goal.id} className="bg-white rounded-xl shadow p-4 flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="font-bold text-black">{goal.description}</div>
+                  <div className="text-sm text-gray-500">{goal.current} / {goal.target}</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div
+                      className="bg-[#FDE500] h-2 rounded-full"
+                      style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col items-center ml-4">
+                  {goal.completed ? (
+                    <span className="text-3xl">{goal.trophy}</span>
+                  ) : (
+                    <button
+                      className="mt-2 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold"
+                      onClick={() => handleCompleteGoal(goal.id)}
+                    >
+                      Mark Complete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="absolute -right-8 -top-8">
-            <div className="w-16 h-16 rounded-full bg-[#FDE500] flex items-center justify-center shadow-lg">
-              <Image src="/brocoli.svg" alt="Broccoli" width={48} height={48} />
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-4">
-          {challenges.map((item, i) => (
-            <label key={i} className="flex items-center gap-4">
-              <span className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-                <input type="checkbox" className="w-6 h-6 accent-black" />
-              </span>
-              <span className="text-xl font-bold text-black">{item}</span>
-            </label>
-          ))}
-        </div>
+        ) : (
+          <div className="text-gray-400 text-sm mt-4">No goals found for this plan. Try generating a new plan with a more specific prompt!</div>
+        )}
       </div>
 
       {/* Bottom Navigation */}
@@ -102,6 +184,7 @@ export default function PodDetailsPage() {
           </div>
         </div>
       </div>
+      <Navbar />
     </div>
   );
 } 

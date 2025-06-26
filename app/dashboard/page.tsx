@@ -1,17 +1,8 @@
 'use client';
 
 import Image from "next/image";
-import React from "react";
-
-const TrophyIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 6h12v3a6 6 0 0 1-12 0V6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-    <path d="M12 18v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M9 21h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M4 8v1a4 4 0 0 0 4 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-    <path d="M20 8v1a4 4 0 0 1-4 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-  </svg>
-);
+import React, { useEffect, useState } from "react";
+import Navbar from "@/app/components/Navbar";
 
 const HomeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -35,27 +26,62 @@ const UsersIcon = () => (
   </svg>
 );
 
+type Goal = {
+  id: string;
+  description: string;
+  type: string;
+  target: number;
+  current: number;
+  completed: boolean;
+  trophy: string;
+};
+
 export default function Dashboard() {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [userPoints, setUserPoints] = useState<number>(0);
+  const [history, setHistory] = useState<any[]>([]);
+  const [totalSpent, setTotalSpent] = useState<number>(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('groceryPlan');
+    if (stored) {
+      const plan = JSON.parse(stored);
+      if (plan.goals) setGoals(plan.goals);
+    }
+    const points = Number(localStorage.getItem('userPoints') || '0');
+    setUserPoints(points);
+    const h = JSON.parse(localStorage.getItem('groceryHistory') || '[]');
+    setHistory(h);
+    setTotalSpent(h.reduce((sum: number, entry: any) => sum + (entry.total || 0), 0));
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#FDE500] px-4 py-6 w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="text-black text-lg font-semibold mb-2">Good evening, Suzanna</div>
-        <div className="bg-black rounded-2xl p-6 text-center shadow-lg">
-          <div className="text-[#FDE500] text-5xl font-black leading-none">7430</div>
-          <div className="text-[#FDE500] text-sm font-semibold mt-1">points</div>
+    <div className="min-h-screen bg-[#ffff] px-8 py-6 w-full max-w-md mx-auto">
+      {/* Black Background Section */}
+      <div className="bg-black pb-12 -mx-10 -mt-6 px-10 pt-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="text-white text-lg font-semibold mb-2 text-left">Good evening, Suzanna</div>
+        </div>
+      </div>
+
+      {/* Points Card - positioned to hang over the black background */}
+      <div className="text-center mb-8 -mt-16 flex justify-center">
+        <div className="bg-[#EDDF5E] w-full rounded-2xl p-6 flex flex-row gap-2 items-center justify-center text-center shadow-lg border-2 border-[#FDE500]">
+          <div className="text-black text-5xl font-black leading-none">{userPoints}</div>
+          <div className="text-black text-sm font-semibold mt-1">points</div>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-md">
-          <div className="text-black text-2xl font-bold">$57</div>
-          <div className="text-black text-sm">Savings</div>
+        <div className="bg-black rounded-xl p-4 shadow-md">
+          <div className="text-white text-2xl font-bold">${totalSpent.toFixed(2)}</div>
+          <div className="text-white text-sm">Total Spent</div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md">
-          <div className="text-black text-2xl font-bold">$213</div>
-          <div className="text-black text-sm">Monthly</div>
+        <div className="bg-black rounded-xl p-4 shadow-md">
+          <div className="text-white text-2xl font-bold">$213</div>
+          <div className="text-white text-sm">Monthly</div>
         </div>
       </div>
 
@@ -75,23 +101,32 @@ export default function Dashboard() {
       <div className="mb-6">
         <h3 className="text-black text-lg font-bold mb-4">Trophies</h3>
         <div className="flex gap-3 overflow-x-auto">
-          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
-            <TrophyIcon />
-            <span className="text-black text-xs font-semibold mt-2 text-center">Budget King</span>
-            <span className="text-black text-xs text-center mt-1">Bought items under $50</span>
-          </div>
-          
-          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
-            <TrophyIcon />
-            <span className="text-black text-xs font-semibold mt-2 text-center">Smart Shopper</span>
-            <span className="text-black text-xs text-center mt-1">Used 5 coupons this week</span>
-          </div>
-          
-          <div className="flex flex-col items-center bg-[#FDE500] rounded-xl p-4 min-w-[100px] shadow-md">
-            <TrophyIcon />
-            <span className="text-black text-xs font-semibold mt-2 text-center">Goal Setter</span>
-            <span className="text-black text-xs text-center mt-1">Reached monthly target</span>
-          </div>
+          {goals.length === 0 && (
+            <div className="text-gray-400 text-sm">No achievements yet. Complete goals to earn trophies!</div>
+          )}
+          {goals.map((goal, i) => {
+            let trophySrc = "/trophy-01.svg";
+            if (goal.trophy === "🥇") trophySrc = "/trophy-01.svg";
+            else if (goal.trophy === "🥈") trophySrc = "/trophy-02.svg";
+            else if (goal.trophy === "🥉") trophySrc = "/trophy-03.svg";
+            // fallback: use trophy-01 for any other
+            return (
+              <div
+                key={goal.id}
+                className={`flex flex-col items-center ${goal.completed ? 'bg-[#FDE500]' : 'bg-gray-200'} rounded-xl p-4 min-w-[100px] shadow-md transition-all`}
+              >
+                <Image
+                  src={trophySrc}
+                  alt="Trophy"
+                  width={80}
+                  height={80}
+                  className={goal.completed ? '' : 'opacity-30 grayscale'}
+                />
+                <span className={`text-black text-xs font-semibold mt-2 text-center ${goal.completed ? '' : 'opacity-40'}`}>{goal.description}</span>
+                <span className={`text-black text-xs text-center mt-1 ${goal.completed ? '' : 'opacity-40'}`}>{goal.current} / {goal.target}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -140,38 +175,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md">
-        <div className="bg-black rounded-t-3xl px-6 py-4">
-          <div className="flex justify-around items-center">
-            <div className="flex flex-col items-center">
-              <HomeIcon />
-              <span className="text-white text-xs mt-1">Dashboard</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <ChatIcon />
-              <span className="text-white text-xs mt-1">The Pod</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <UsersIcon />
-              <span className="text-white text-xs mt-1">My Party</span>
-            </div>
-            
-            <div className="bg-[#FDE500] rounded-full p-2">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <Image
-                  src="/brocoli.svg"
-                  alt="broccoli"
-                  width={32}
-                  height={32}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+      <Navbar />
     </div>
   );
 } 

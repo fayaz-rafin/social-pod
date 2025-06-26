@@ -37,11 +37,11 @@ const UsersIcon = () => (
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-[#FDE500] px-4 py-6 w-full max-w-md mx-auto">
+    <div className="min-h-screen bg-[#ffff] px-4 py-6 w-full max-w-md mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="text-black text-lg font-semibold mb-2">Good evening, Suzanna</div>
-        <div className="bg-black rounded-2xl p-6 text-center shadow-lg">
+        <div className="text-black text-lg font-semibold mb-2 text-left">Good evening, Suzanna</div>
+        <div className="bg-black rounded-2xl p-6 flex flex-row gap-2 items-center justify-center text-center shadow-lg">
           <div className="text-[#FDE500] text-5xl font-black leading-none">7430</div>
           <div className="text-[#FDE500] text-sm font-semibold mt-1">points</div>
         </div>

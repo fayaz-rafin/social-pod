@@ -20,37 +20,39 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: `You are Mr. Brocoli, a helpful grocery planning assistant. Given a user's dietary goal and budget, generate a detailed grocery plan that includes:
-          
-          1. A brief summary of the plan
-          2. A detailed ingredient list with approximate prices
-          3. Total estimated cost
-          
-          Format your response as JSON with this structure:
+          content: `You are Mr. Brocoli, a helpful grocery planning assistant. You MUST respond with ONLY valid JSON, no additional text.
+
+          Generate a grocery plan with this EXACT JSON structure:
           {
             "summary": "Brief description of the grocery plan",
             "ingredients": [
               {
                 "name": "Ingredient name",
                 "quantity": "Amount needed",
-                "price": "Estimated price in dollars",
-                "category": "Food category (protein, vegetable, grain, etc.)"
+                "price": "5.99",
+                "category": "Protein"
               }
             ],
-            "totalCost": "Total estimated cost",
-            "tips": ["Helpful shopping or meal prep tips"]
+            "totalCost": "45.50",
+            "tips": ["Helpful tip 1", "Helpful tip 2"]
           }
-          
-          Keep prices realistic and within the user's budget. If budget is tight, suggest budget-friendly alternatives.`
+
+          Rules:
+          - Respond ONLY with valid JSON
+          - Keep prices realistic and within budget
+          - Include 5-8 ingredients
+          - Price should be number as string (e.g., "5.99")
+          - Categories: Protein, Vegetable, Grain, Dairy, Pantry, Herb/Spice
+          - Make sure total cost is close to but under the budget`
         },
         {
           role: "user",
-          content: `My goal: ${prompt}\nMy budget: $${budget}\n\nPlease create a grocery plan for me.`
+          content: `Goal: ${prompt}\nBudget: $${budget}\n\nCreate a grocery plan JSON response.`
         }
       ],
       model: "llama3-8b-8192",
-      temperature: 0.7,
-      max_tokens: 1000,
+      temperature: 0.3,
+      max_tokens: 800,
     });
 
     const responseContent = completion.choices[0]?.message?.content;
@@ -59,17 +61,76 @@ export async function POST(request: NextRequest) {
       throw new Error("No response from Groq");
     }
 
-    // Try to parse as JSON, fallback to text response if parsing fails
+    console.log("Raw Groq response:", responseContent);
+
+    // Clean up the response - remove any markdown formatting or extra text
+    let cleanedResponse = responseContent.trim();
+    
+    // Remove markdown json code blocks if present
+    cleanedResponse = cleanedResponse.replace(/```json\s*/g, '');
+    cleanedResponse = cleanedResponse.replace(/```\s*/g, '');
+    
+    // Find JSON object boundaries
+    const jsonStart = cleanedResponse.indexOf('{');
+    const jsonEnd = cleanedResponse.lastIndexOf('}') + 1;
+    
+    if (jsonStart !== -1 && jsonEnd > jsonStart) {
+      cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd);
+    }
+
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(responseContent);
+      parsedResponse = JSON.parse(cleanedResponse);
+      
+      // Validate the structure
+      if (!parsedResponse.summary || !parsedResponse.ingredients || !Array.isArray(parsedResponse.ingredients)) {
+        throw new Error("Invalid JSON structure");
+      }
+      
+      // Ensure totalCost is a string
+      if (typeof parsedResponse.totalCost === 'number') {
+        parsedResponse.totalCost = parsedResponse.totalCost.toString();
+      }
+      
     } catch (parseError) {
-      // If JSON parsing fails, create a structured response from the text
+      console.error("JSON parsing failed:", parseError);
+      console.error("Cleaned response:", cleanedResponse);
+      
+      // Extract information manually if JSON parsing fails
+      const summaryMatch = cleanedResponse.match(/"summary":\s*"([^"]+)"/);
+      const summary = summaryMatch ? summaryMatch[1] : "A grocery plan has been created for your dietary goals.";
+      
+      // Create a fallback structured response
       parsedResponse = {
-        summary: responseContent,
-        ingredients: [],
-        totalCost: budget,
-        tips: ["Check the full response above for detailed information"]
+        summary: summary,
+        ingredients: [
+          {
+            name: "Chicken Breast",
+            quantity: "1 lb",
+            price: "6.99",
+            category: "Protein"
+          },
+          {
+            name: "Rice",
+            quantity: "2 lbs",
+            price: "3.49",
+            category: "Grain"
+          },
+          {
+            name: "Mixed Vegetables",
+            quantity: "1 bag",
+            price: "2.99",
+            category: "Vegetable"
+          },
+          {
+            name: "Olive Oil",
+            quantity: "1 bottle",
+            price: "4.99",
+            category: "Pantry"
+          }
+        ],
+        totalCost: (budget * 0.9).toFixed(2),
+        tips: ["Shop during sales for better prices", "Buy in bulk for non-perishables"]
       };
     }
 

@@ -1,0 +1,41 @@
+import { useEffect, useState } from 'react';
+import { supabaseConn } from './dbClient';
+
+export interface ListItem {
+  budget: number;
+  grocer_list: string[];
+  total_spending: number;
+}
+
+export interface User {
+  user_id: string;
+  user_name: string;
+  user_points: number;
+  user_lists: ListItem[];       // Now an array of objects
+  user_goals: string[];
+}
+
+export interface Item {
+  item_id: number;
+  item_name: string;
+  item_price: number;
+}
+
+export async function getUserById(userId: string): Promise<{ data: User | null; error: Error | null }> {
+  const { data, error } = await supabaseConn
+    .from('user_data')
+    .select('*')
+    .eq('user_id', userId)
+    .single();   // returns a single object instead of an array
+
+  return { data, error };
+}
+
+
+export async function getItems(): Promise<{ data: Item[] | null; error: Error | null }>  {
+  const { data, error } = await supabaseConn
+    .from('item_table')
+    .select('*');   // returns all items
+
+  return { data, error };
+}

@@ -7,54 +7,77 @@ const groceries = [
     name: "No Name's Diced Tomatoes",
     size: "700 g",
     img: "/diced-tomatoes.png",
+    price: 5.99,
   },
   {
     name: "No Name's Farmer's Marble Cheese",
     size: "700 g",
     img: "/marble-cheese.png",
+    price: 7.49,
   },
   {
     name: "No Name's 100% Pure Vegetable Oil",
     size: "946 ml",
     img: "/vegetable-oil.png",
+    price: 4.29,
   },
   // Repeat for demo
   {
     name: "No Name's Diced Tomatoes",
     size: "700 g",
     img: "/diced-tomatoes.png",
+    price: 5.99,
   },
   {
     name: "No Name's Farmer's Marble Cheese",
     size: "700 g",
     img: "/marble-cheese.png",
+    price: 7.49,
   },
   {
     name: "No Name's 100% Pure Vegetable Oil",
     size: "946 ml",
     img: "/vegetable-oil.png",
+    price: 4.29,
   },
   {
     name: "No Name's Diced Tomatoes",
     size: "700 g",
     img: "/diced-tomatoes.png",
+    price: 5.99,
   },
   {
     name: "No Name's Farmer's Marble Cheese",
     size: "700 g",
     img: "/marble-cheese.png",
+    price: 7.49,
   },
   {
     name: "No Name's 100% Pure Vegetable Oil",
     size: "946 ml",
     img: "/vegetable-oil.png",
+    price: 4.29,
   },
 ];
+
+const BUDGET = 45;
 
 export default function PlanPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prompt = searchParams.get('prompt') || 'List for cooking pasta for bulking';
+
+  const handleFinalizePlan = () => {
+    const total = groceries.reduce((sum, item) => sum + (item.price || 0), 0);
+    const plan = {
+      groceries,
+      total,
+      budget: BUDGET,
+      prompt,
+    };
+    localStorage.setItem('groceryPlan', JSON.stringify(plan));
+    router.push('/pod-details');
+  };
 
   return (
     <div className="min-h-screen bg-[#FDE500] flex flex-col pb-32">
@@ -94,7 +117,7 @@ export default function PlanPage() {
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-6 pb-8">
         <button
           className="w-full bg-black text-white text-2xl font-bold py-4 rounded-full shadow-lg active:scale-95 transition-transform"
-          onClick={() => router.push('/pod-details')}
+          onClick={handleFinalizePlan}
         >
           Finalize Plan
         </button>

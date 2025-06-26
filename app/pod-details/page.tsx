@@ -1,12 +1,21 @@
 'use client';
 import Image from 'next/image';
+import Navbar from '../components/Navbar';
+import { useEffect, useState } from 'react';
 
-const groceryList = [
-  'Diced Tomatoes',
-  'Marble Cheese',
-  'Olive Oil',
-  'Milk',
-];
+type GroceryItem = {
+  name: string;
+  size: string;
+  img: string;
+  price: number;
+};
+
+type GroceryPlan = {
+  groceries: GroceryItem[];
+  total: number;
+  budget: number;
+  prompt: string;
+};
 
 const challenges = [
   'Spend $20 on Grass-Fed Beef',
@@ -14,12 +23,31 @@ const challenges = [
 ];
 
 export default function PodDetailsPage() {
+  const [plan, setPlan] = useState<GroceryPlan | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('groceryPlan');
+    if (stored) {
+      setPlan(JSON.parse(stored));
+    }
+  }, []);
+
+  if (!plan) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-black text-xl font-bold">No plan found. Please finalize a plan first.</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col pb-32 max-w-md mx-auto">
       {/* Black Header */}
       <div className="bg-black rounded-b-3xl px-6 pt-8 pb-6 flex items-center justify-between relative">
         <div className="text-white text-2xl font-bold leading-tight">
-          List for cooking pasta<br />for bulking
+          {plan.prompt.split(/\n|<br\s*\/?>/).map((line, i) => (
+            <span key={i}>{line}<br /></span>
+          ))}
         </div>
         <div className="bg-white rounded-xl shadow-md p-2">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#000" strokeWidth="2"/><path d="M8 2v4M16 2v4M8 18v4M16 18v4" stroke="#000" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -37,11 +65,11 @@ export default function PodDetailsPage() {
       {/* Spending & Budget Cards */}
       <div className="px-6 mt-4 flex gap-4">
         <div className="flex-1 bg-green-500 rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">$40</span>
+          <span className="text-3xl font-black text-white">${plan.total.toFixed(2)}</span>
           <span className="text-lg text-white">in spending</span>
         </div>
         <div className="flex-1 bg-black rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">$45</span>
+          <span className="text-3xl font-black text-white">${plan.budget.toFixed(2)}</span>
           <span className="text-lg text-white">original budget</span>
         </div>
       </div>
@@ -49,12 +77,20 @@ export default function PodDetailsPage() {
       {/* Grocery List */}
       <div className="px-6 mt-8">
         <h2 className="text-2xl font-black mb-4 text-gray-300 font-bold">Grocery List</h2>
-        <div className="flex flex-col gap-4">
-          {groceryList.map((item, i) => (
-            <div key={i} className="flex items-center gap-4">
-              <span className="text-xl font-bold text-black">{item}</span>
+        <div className="flex flex-col gap-4 max-h-60 overflow-y-auto pr-2">
+          {plan.groceries.map((item, i) => (
+            <div key={i} className="flex items-center gap-4 bg-white rounded-xl shadow p-3">
+              <img src={item.img} alt={item.name} className="w-12 h-12 rounded-lg object-contain" />
+              <div className="flex-1">
+                <div className="text-lg font-bold text-black">{item.name}</div>
+                <div className="text-xs text-gray-500">{item.size}</div>
+              </div>
+              <div className="text-lg font-bold text-black">${item.price.toFixed(2)}</div>
             </div>
           ))}
+        </div>
+        <div className="flex justify-end mt-4">
+          <span className="text-xl font-black text-black">Total: ${plan.total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -102,6 +138,7 @@ export default function PodDetailsPage() {
           </div>
         </div>
       </div>
+      <Navbar />
     </div>
   );
 } 

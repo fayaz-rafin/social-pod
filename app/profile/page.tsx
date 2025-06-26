@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../supabaseClient';
 import { useEffect, useState } from 'react';
+import Navbar from '../components/Navbar';
 
 export default function ProfilePage() {
   const [email, setEmail] = useState('');
@@ -69,6 +70,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <Navbar />
     </div>
   );
 } 

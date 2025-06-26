@@ -1,6 +1,7 @@
 'use client';
 import Image from "next/image";
 import React, { useState } from "react";
+import { useRouter } from 'next/navigation';
 
 interface Ingredient {
   name: string;
@@ -23,6 +24,7 @@ export default function BrocoliPage() {
   const [groceryPlan, setGroceryPlan] = useState<GroceryPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const generatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,6 +189,7 @@ export default function BrocoliPage() {
               </button>
               <button
                 className="w-full bg-black text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform"
+                onClick={() => router.push(`/plan?prompt=${encodeURIComponent(prompt)}`)}
               >
                 Generate Grocery List
               </button>

@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const groceries = [
   {
@@ -53,6 +53,8 @@ const groceries = [
 
 export default function PlanPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prompt = searchParams.get('prompt') || 'List for cooking pasta for bulking';
 
   return (
     <div className="min-h-screen bg-[#FDE500] flex flex-col pb-32">
@@ -61,7 +63,7 @@ export default function PlanPage() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-5xl font-black text-black leading-none mb-2">Plan</h1>
-            <p className="text-xl font-bold text-black mb-2">List for cooking pasta for bulking</p>
+            <p className="text-xl font-bold text-black mb-2">{prompt}</p>
           </div>
           <Image src="/brocoli.svg" alt="Broccoli" width={64} height={64} className="ml-2" />
         </div>

@@ -11,8 +11,8 @@ export default function BrocoliPage() {
     "You grocery trip is going to be protein filled, with vegetables and meat";
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between bg-[#FDE500] px-4 pt-6 pb-6 w-full max-w-md mx-auto">
-      {/* Top bar (fake status bar for mobile look) */}
+    <div className="min-h-screen flex flex-col items-center justify-between bg-[#FDE500] px-6 pt-6 pb-6 w-full max-w-md mx-auto">
+      {/* Top bar (fake status bar for mobile look)
       <div className="w-full flex justify-between items-center mb-2">
         <span className="text-xs font-semibold tracking-wide">9:41</span>
         <div className="flex gap-1 items-center">
@@ -24,17 +24,18 @@ export default function BrocoliPage() {
           <span className="inline-block w-4 h-2 bg-black rounded-sm"></span>
           <span className="inline-block w-2 h-2 bg-black rounded-full"></span>
         </div>
-      </div>
+      </div> */}
       {step === 1 ? (
         <>
           {/* Title and subtitle */}
-          <div className="w-full flex flex-col items-start mt-2">
-            <h1 className="text-5xl font-extrabold leading-none text-black">Create<br/>A Pod</h1>
-            <p className="text-lg font-semibold text-black mt-2">Tell Mr Brocoli what you need</p>
+          <div className="w-full flex flex-col items-start mt-1">
+            <h1 className="text-7xl font-extrabold leading-none text-black">Create<br/>A Pod</h1>
+            <p className="text-lg font-semibold text-black mt-1">Tell Mr Brocoli what you are cooking</p>
+            <p className="text-lg font-semibold text-black mt-1">and your needs</p>
           </div>
           {/* Mascot */}
           <div className="flex justify-center w-full my-6">
-            <Image src="/brocoli.svg" alt="Mr Brocoli" width={132} height={137} priority />
+            <Image src="/brocoli.svg" alt="Mr Brocoli" width={180} height={187} priority />
           </div>
           {/* Input area */}
           <form
@@ -45,7 +46,7 @@ export default function BrocoliPage() {
             }}
           >
             <textarea
-              className="w-full min-h-[120px] rounded-2xl p-4 text-lg font-semibold text-black bg-white placeholder:text-black/60 focus:outline-none resize-none shadow-md"
+              className="w-full min-h-[200px] rounded-2xl p-4 text-lg font-semibold text-black bg-white placeholder:text-black/60 focus:outline-none resize-none shadow-md"
               placeholder="I want to bulk up"
               value={prompt}
               onChange={e => setPrompt(e.target.value)}

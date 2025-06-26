@@ -43,7 +43,7 @@ export default function PodDetailsPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col pb-32 max-w-md mx-auto">
       {/* Black Header */}
-      <div className="bg-black rounded-b-3xl px-6 pt-8 pb-6 flex items-center justify-between relative">
+      <div className="bg-black px-6 pt-8 pb-16 flex items-center justify-between relative z-10">
         <div className="text-white text-2xl font-bold leading-tight">
           {plan.prompt.split(/\n|<br\s*\/?>/).map((line, i) => (
             <span key={i}>{line}<br /></span>
@@ -55,8 +55,8 @@ export default function PodDetailsPage() {
       </div>
 
       {/* Points Card */}
-      <div className="px-6 -mt-8">
-        <div className="bg-[#FDE500] rounded-2xl shadow-md p-6 flex items-center justify-between">
+      <div className="px-6 -mt-8 relative z-20">
+        <div className="bg-[#EDDF5E] rounded-2xl shadow-md p-6 flex items-center justify-between">
           <span className="text-6xl font-black text-black">2000</span>
           <span className="text-xl font-bold text-black ml-2">pts earned</span>
         </div>
@@ -64,19 +64,19 @@ export default function PodDetailsPage() {
 
       {/* Spending & Budget Cards */}
       <div className="px-6 mt-4 flex gap-4">
-        <div className="flex-1 bg-green-500 rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">${plan.total.toFixed(2)}</span>
+        <div className="flex-1 bg-[#5D9659] rounded-2xl shadow-md p-4 flex flex-col items-left justify-center">
+          <span className="text-3xl text-left font-extrabold text-white">${plan.total.toFixed(2)}</span>
           <span className="text-lg text-white">in spending</span>
         </div>
-        <div className="flex-1 bg-black rounded-2xl shadow-md p-4 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white">${plan.budget.toFixed(2)}</span>
+        <div className="flex-1 bg-black rounded-2xl shadow-md p-4 flex flex-col items-left justify-center">
+          <span className="text-3xl text-left font-extrabold text-white">${plan.budget.toFixed(2)}</span>
           <span className="text-lg text-white">original budget</span>
         </div>
       </div>
 
       {/* Grocery List */}
       <div className="px-6 mt-8">
-        <h2 className="text-2xl font-black mb-4 text-gray-300 font-bold">Grocery List</h2>
+        <h2 className="text-2xl mb-4 text-black font-extrabold">Grocery List</h2>
         <div className="flex flex-col gap-4 max-h-60 overflow-y-auto pr-2">
           {plan.groceries.map((item, i) => (
             <div key={i} className="flex items-center gap-4 bg-white rounded-xl shadow p-3">
@@ -99,7 +99,7 @@ export default function PodDetailsPage() {
         <h2 className="text-2xl font-black mb-2">Mr Broccoli Challenges</h2>
         <div className="relative mb-6">
           <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
-            <div className="bg-[#FDE500] h-8 rounded-full flex items-center justify-center" style={{width: '60%'}}>
+            <div className="bg-[#EDDF5E] h-8 rounded-full flex items-center justify-center" style={{width: '60%'}}>
               <span className="text-black font-bold text-lg">60% completed</span>
             </div>
           </div>

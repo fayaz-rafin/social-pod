@@ -1,0 +1,22 @@
+{
+    "theme_color": "#FDE500",
+    "background_color": "#FDE500",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "name": "SocialPod",
+    "short_name": "SocialPod",
+    "description": "A social app for grocery planning.",
+    "icons": [
+        {
+            "src": "/noname.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/noname.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+} 

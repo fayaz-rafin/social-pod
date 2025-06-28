@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Navbar from '../components/Navbar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getGroceryPlanById, GroceryPlan as DBGroceryPlan } from '../data/dataStore';
 import { supabase } from '../supabaseClient';
@@ -31,7 +31,7 @@ type GroceryPlan = {
   goals?: Goal[];
 };
 
-export default function PodDetailsPage() {
+function PodDetailsContent() {
   const [plan, setPlan] = useState<GroceryPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -226,5 +226,17 @@ export default function PodDetailsPage() {
       </div>
       <Navbar />
     </div>
+  );
+}
+
+export default function PodDetailsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-black text-xl font-bold">Loading plan details...</div>
+      </div>
+    }>
+      <PodDetailsContent />
+    </Suspense>
   );
 } 

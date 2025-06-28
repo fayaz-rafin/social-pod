@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { saveGroceryPlan } from '../data/dataStore';
 import { supabase } from '../supabaseClient';
 
@@ -66,7 +66,7 @@ const demoGroceries = [
 
 const BUDGET = 45;
 
-export default function PlanPage() {
+function PlanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prompt = searchParams.get('prompt') || 'List for cooking pasta for bulking';
@@ -321,5 +321,18 @@ export default function PlanPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function PlanPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FDE500] flex flex-col justify-center items-center gap-4">
+        <h1 className="text-4xl font-black text-black">Generating your plan...</h1>
+        <p className="text-xl font-bold text-black">Please wait a moment.</p>
+      </div>
+    }>
+      <PlanContent />
+    </Suspense>
   );
 } 

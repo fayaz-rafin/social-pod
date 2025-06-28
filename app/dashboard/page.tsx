@@ -3,6 +3,9 @@
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
+import { getGroceryHistory, GroceryPlan } from '../data/dataStore';
+import { supabase } from '../supabaseClient';
+import Link from 'next/link';
 
 const HomeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -39,10 +42,24 @@ type Goal = {
 export default function Dashboard() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [userPoints, setUserPoints] = useState<number>(0);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<GroceryPlan[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [totalSpent, setTotalSpent] = useState<number>(0);
 
   useEffect(() => {
+    const fetchHistory = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) {
+        setHistory([]);
+        setLoadingHistory(false);
+        return;
+      }
+      const { data, error } = await getGroceryHistory(userId);
+      if (data) setHistory(data);
+      setLoadingHistory(false);
+    };
+    fetchHistory();
     const stored = localStorage.getItem('groceryPlan');
     if (stored) {
       const plan = JSON.parse(stored);
@@ -51,7 +68,6 @@ export default function Dashboard() {
     const points = Number(localStorage.getItem('userPoints') || '0');
     setUserPoints(points);
     const h = JSON.parse(localStorage.getItem('groceryHistory') || '[]');
-    setHistory(h);
     setTotalSpent(h.reduce((sum: number, entry: any) => sum + (entry.total || 0), 0));
   }, []);
 
@@ -95,6 +111,33 @@ export default function Dashboard() {
           <div className="bg-[#FDE500] h-3 rounded-full" style={{ width: '68%' }}></div>
         </div>
         <div className="text-black text-sm">Keep it up! You're doing great with your budget</div>
+      </div>
+
+      {/* History Section */}
+      <div className="mb-8">
+        <h3 className="text-black text-lg font-bold mb-4">History</h3>
+        {loadingHistory ? (
+          <div className="text-gray-400 text-sm">Loading...</div>
+        ) : history.length === 0 ? (
+          <div className="text-gray-400 text-sm">No grocery plans yet. Finalize a plan to see it here!</div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {history.map(plan => (
+              <Link
+                key={plan.id}
+                href={`/pod-details?id=${plan.id}`}
+                className="block bg-white rounded-xl shadow p-4 border border-gray-100 hover:border-[#FDE500] transition"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-bold text-black text-base truncate max-w-[60%]">{plan.prompt}</span>
+                  <span className="text-xs text-gray-500">{new Date(plan.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="text-black text-sm">Budget: <span className="font-bold">${plan.budget.toFixed(2)}</span></div>
+                <div className="text-black text-xs mt-1">{plan.groceries.length} items</div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Trophies Section */}

@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 import { useState, useEffect } from 'react';
+import { saveGroceryPlan } from '../data/dataStore';
+import { supabase } from '../supabaseClient';
 
 const demoGroceries = [
   {
@@ -174,15 +176,29 @@ export default function PlanPage() {
     setSearchResults([]);
   };
 
-  const handleFinalizePlan = () => {
+  const handleFinalizePlan = async () => {
+    // Get current user session
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Supabase session:', session);
+    const userId = session?.user?.id;
+    console.log('Supabase userId:', userId);
+    if (!userId) {
+      alert('You must be logged in to save your plan.');
+      return;
+    }
     const planToSave = {
-      groceries,
-      total,
-      budget,
+      userId,
       prompt,
+      groceries,
+      budget,
       goals,
-      date: new Date().toISOString(),
     };
+    // Save to Supabase
+    const { error } = await saveGroceryPlan(planToSave);
+    if (error) {
+      alert('Failed to save plan to database.');
+    }
+    // Also save to localStorage as fallback
     localStorage.setItem('groceryPlan', JSON.stringify(planToSave));
     // Save to history
     const history = JSON.parse(localStorage.getItem('groceryHistory') || '[]');

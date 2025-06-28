@@ -22,13 +22,14 @@ export default function Home() {
             </div>
           {/* Main title */}
           <h1 className="text-6xl font-black text-black mb-4 leading-none">
-            socialpod
+            social brocoli
           </h1>
 
           {/* Subtitle */}
           <p className="text-2xl font-bold text-black mb-12">
             shopping made fun
           </p>
+  
 
         </div>        
       </div>
@@ -40,7 +41,7 @@ export default function Home() {
           {/* Team credits */}
           <div className="flex flex-col  gap-2 mb-6">
             <p className="text-lg font-bold text-black mb-1">presented by</p>
-            <p className="text-3xl font-black text-black mb-2">noidea team</p>
+            <p className="text-3xl font-black text-black mb-2">by no idea®</p>
             <p className="text-lg font-semibold text-black">
               menghao, ayman, fayaz & suzanna
             </p>

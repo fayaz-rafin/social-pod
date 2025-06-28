@@ -2,6 +2,9 @@
 import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { getGroceryPlanById, GroceryPlan as DBGroceryPlan } from '../data/dataStore';
+import { supabase } from '../supabaseClient';
 
 type GroceryItem = {
   name: string;
@@ -30,24 +33,53 @@ type GroceryPlan = {
 
 export default function PodDetailsPage() {
   const [plan, setPlan] = useState<GroceryPlan | null>(null);
+  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
 
   useEffect(() => {
-    const stored = localStorage.getItem('groceryPlan');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      parsed.budget = Number(parsed.budget) || 0;
-      if (parsed.groceries) {
-        parsed.groceries = parsed.groceries.map((item: any) => ({
-          ...item,
-          price: Number(item.price) || 0,
-        }));
-        parsed.total = parsed.groceries.reduce((sum: number, item: any) => sum + item.price, 0);
-      } else {
-        parsed.total = 0;
+    const fetchPlan = async () => {
+      if (id) {
+        // Fetch from Supabase
+        const { data, error } = await getGroceryPlanById(id);
+        if (data) {
+          // Convert DB plan to local plan shape
+          const groceries = (data.groceries || []).map((item: any) => ({
+            ...item,
+            price: Number(item.price) || 0,
+          }));
+          const total = groceries.reduce((sum: number, item: any) => sum + item.price, 0);
+          setPlan({
+            groceries,
+            total,
+            budget: Number(data.budget) || 0,
+            prompt: data.prompt,
+            goals: data.goals || [],
+          });
+        }
+        setLoading(false);
+        return;
       }
-      setPlan(parsed);
-    }
-  }, []);
+      // Fallback: localStorage
+      const stored = localStorage.getItem('groceryPlan');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        parsed.budget = Number(parsed.budget) || 0;
+        if (parsed.groceries) {
+          parsed.groceries = parsed.groceries.map((item: any) => ({
+            ...item,
+            price: Number(item.price) || 0,
+          }));
+          parsed.total = parsed.groceries.reduce((sum: number, item: any) => sum + item.price, 0);
+        } else {
+          parsed.total = 0;
+        }
+        setPlan(parsed);
+      }
+      setLoading(false);
+    };
+    fetchPlan();
+  }, [id]);
 
   // Handler to mark a goal as complete
   const handleCompleteGoal = (goalId: string) => {
@@ -67,6 +99,14 @@ export default function PodDetailsPage() {
       localStorage.setItem('userPoints', userPoints.toString());
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-black text-xl font-bold">Loading plan...</div>
+      </div>
+    );
+  }
 
   if (!plan) {
     return (

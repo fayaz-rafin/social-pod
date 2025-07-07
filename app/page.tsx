@@ -1,7 +1,26 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from '@supabase/supabase-js';
 
 export default function Home() {
+  const router = useRouter();
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
+  const handleGetStarted = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session) {
+      router.push('/brocoli');
+    } else {
+      router.push('/auth/login');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-between bg-[#FDE500] px-6 py-8 w-full max-w-md mx-auto">
 
@@ -46,11 +65,12 @@ export default function Home() {
               menghao, ayman, fayaz & suzanna
             </p>
           </div>
-        <Link href="/brocoli" className="w-full">
-          <button className="w-full bg-black text-white text-xl font-bold py-4 rounded-full shadow-lg active:scale-95 transition-transform mb-4">
-            Start My Pod
-          </button>
-        </Link>
+        <button 
+          onClick={handleGetStarted}
+          className="w-full bg-black text-white text-xl font-bold py-4 rounded-full shadow-lg active:scale-95 transition-transform mb-4"
+        >
+          Get Started
+        </button>
         <Link href="/auth/signup" className="text-black font-bold text-lg underline">
           or create account
         </Link>

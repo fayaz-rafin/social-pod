@@ -15,10 +15,11 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('Login result:', data, error);
     setLoading(false);
     if (error) setError(error.message);
-    else router.push('/dashboard');
+    else setTimeout(() => { window.location.href = '/dashboard'; }, 500);
   };
 
   return (

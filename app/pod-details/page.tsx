@@ -34,6 +34,9 @@ type GroceryPlan = {
 function PodDetailsContent() {
   const [plan, setPlan] = useState<GroceryPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
 
@@ -98,6 +101,27 @@ function PodDetailsContent() {
       userPoints += 100;
       localStorage.setItem('userPoints', userPoints.toString());
     }
+  };
+
+  const handleAddToNoFrillsCart = async () => {
+    setApiLoading(true);
+    setApiError(null);
+    try {
+      const res = await fetch('/api/add-to-nofrills-cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groceries: plan?.groceries }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = 'https://www.nofrills.ca/en';
+      } else {
+        setApiError(data.error || 'Failed to add items.');
+      }
+    } catch (err: any) {
+      setApiError(err.message || 'Failed to add items.');
+    }
+    setApiLoading(false);
   };
 
   if (loading) {
@@ -207,6 +231,41 @@ function PodDetailsContent() {
         )}
       </div>
 
+      {/* Add Items to No Frills Cart Button */}
+      <div className="px-6 mt-8 flex justify-center">
+        <button
+          className="bg-[#FDE500] text-black font-bold px-6 py-3 rounded-full shadow-lg text-lg hover:bg-yellow-300 transition"
+          onClick={() => setShowModal(true)}
+        >
+          Add Items to No Frills Cart
+        </button>
+      </div>
+      {/* Modal for Add to Cart */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm flex flex-col gap-4 relative">
+            <button
+              className="absolute top-2 right-2 text-black text-2xl font-bold"
+              onClick={() => { setShowModal(false); setApiError(null); }}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h2 className="text-2xl font-black text-black mb-2 text-center">Add Items to No Frills Cart</h2>
+            {apiError && <div className="text-red-500 text-sm text-center">{apiError}</div>}
+            <button
+              className="w-full bg-black text-white text-lg font-bold py-3 rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-50"
+              onClick={handleAddToNoFrillsCart}
+              disabled={apiLoading}
+            >
+              {apiLoading ? 'Adding...' : 'Add to Cart'}
+            </button>
+            <div className="text-xs text-gray-500 text-center mt-2">
+              You will be redirected to No Frills after adding items.
+            </div>
+          </div>
+        </div>
+      )}
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-6 pb-8">
         <div className="w-full bg-black rounded-full flex justify-around items-center py-4">

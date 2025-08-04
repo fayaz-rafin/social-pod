@@ -3,11 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabaseClient';
 
 export default function Home() {
   const router = useRouter();
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
   const handleGetStarted = async () => {
     const {
@@ -45,11 +44,22 @@ export default function Home() {
             onClick={handleGetStarted}
             className="w-full bg-[#375654] text-white text-xl font-bold py-4 rounded-full shadow-lg active:scale-95 transition-transform mb-4 hover:bg-[#2d4240]"
           >
-            Start My Pod
+            Get Started
           </button>
-          <Link href="/auth/signup" className="text-[#375654] font-bold text-lg underline hover:text-[#2d4240]">
+          <Link href="/auth/signup" className="text-[#375654] font-bold text-lg underline hover:text-[#2d4240] mb-6">
             or create account
           </Link>
+          
+          {/* Legal Links */}
+          <div className="text-center space-x-4">
+            <Link href="/privacy" className="text-[#375654] text-sm opacity-75 hover:opacity-100 underline">
+              Privacy Policy
+            </Link>
+            <span className="text-[#375654] text-sm opacity-50">•</span>
+            <Link href="/terms" className="text-[#375654] text-sm opacity-75 hover:opacity-100 underline">
+              Terms of Service
+            </Link>
+          </div>
         </div>
       </div>
     </div>

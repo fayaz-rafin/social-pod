@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -107,11 +106,31 @@ function PodDetailsContent() {
     setApiLoading(true);
     setApiError(null);
     try {
+      // Get user session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please log in to add items to cart.');
+      }
+
       const res = await fetch('/api/add-to-nofrills-cart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ groceries: plan?.groceries }),
       });
+      if (!res.ok) {
+        const errorData = await res.json();
+        if (res.status === 401 && errorData.type === 'AUTHENTICATION_REQUIRED') {
+          throw new Error('Please log in to add items to cart.');
+        }
+        if (res.status === 429 && errorData.type === 'RATE_LIMIT_EXCEEDED') {
+          throw new Error(errorData.error || 'Too many cart requests. Please wait before trying again.');
+        }
+        throw new Error(errorData.error || 'Failed to add items to cart.');
+      }
+
       const data = await res.json();
       if (data.success) {
         window.location.href = 'https://www.nofrills.ca/en';

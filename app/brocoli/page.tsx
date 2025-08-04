@@ -3,6 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
+import { supabase } from '../supabaseClient';
 
 interface Ingredient {
   name: string;
@@ -49,6 +50,7 @@ export default function BrocoliPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFetchingImages, setIsFetchingImages] = useState(false);
   const [currentQuote, setCurrentQuote] = useState("");
+  const [rateLimitRetryAfter, setRateLimitRetryAfter] = useState<number | null>(null);
   const router = useRouter();
 
   // Set random quote on component mount
@@ -56,6 +58,23 @@ export default function BrocoliPage() {
     const randomQuote = speechBubbleQuotes[Math.floor(Math.random() * speechBubbleQuotes.length)];
     setCurrentQuote(randomQuote);
   }, []);
+
+  // Handle rate limit countdown
+  useEffect(() => {
+    if (rateLimitRetryAfter === null) return;
+
+    const interval = setInterval(() => {
+      setRateLimitRetryAfter(prev => {
+        if (prev === null || prev <= 1) {
+          setError(null); // Clear error when countdown reaches 0
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [rateLimitRetryAfter]);
 
   // Auto-resize textareas when prompt changes
   useEffect(() => {
@@ -116,10 +135,17 @@ export default function BrocoliPage() {
     setError(null);
 
     try {
+      // Get user session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please log in to generate meal plans.');
+      }
+
       const response = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           prompt,
@@ -128,7 +154,18 @@ export default function BrocoliPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate plan');
+        const errorData = await response.json();
+        if (response.status === 401 && errorData.type === 'AUTHENTICATION_REQUIRED') {
+          throw new Error('Please log in to generate meal plans.');
+        }
+        if (response.status === 429 && errorData.type === 'RATE_LIMIT_EXCEEDED') {
+          const retryAfter = response.headers.get('Retry-After');
+          if (retryAfter) {
+            setRateLimitRetryAfter(parseInt(retryAfter));
+          }
+          throw new Error(errorData.error || 'Too many requests. Please wait before trying again.');
+        }
+        throw new Error(errorData.error || 'Failed to generate plan');
       }
 
       const plan: GroceryPlan = await response.json();
@@ -306,12 +343,17 @@ export default function BrocoliPage() {
               {error && (
                 <div className="w-full p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
                   {error}
+                  {rateLimitRetryAfter && (
+                    <div className="mt-2 text-xs font-semibold">
+                      You can try again in {rateLimitRetryAfter} seconds...
+                    </div>
+                  )}
                 </div>
               )}
 
               <button
                 type="submit"
-                disabled={isLoading || !prompt.trim()}
+                disabled={isLoading || !prompt.trim() || rateLimitRetryAfter !== null}
                 className="w-full bg-[#375654] text-white text-lg font-bold py-4 rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2d4240]"
               >
                 {isLoading ? 'Generating Plan...' : 'Generate A Plan'}
@@ -450,13 +492,18 @@ export default function BrocoliPage() {
               {error && (
                 <div className="w-full p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-base">
                   {error}
+                  {rateLimitRetryAfter && (
+                    <div className="mt-2 text-sm font-semibold">
+                      You can try again in {rateLimitRetryAfter} seconds...
+                    </div>
+                  )}
                 </div>
               )}
 
               <div className="flex justify-center">
                 <button
                   type="submit"
-                  disabled={isLoading || !prompt.trim()}
+                  disabled={isLoading || !prompt.trim() || rateLimitRetryAfter !== null}
                   className="bg-[#375654] text-white text-xl lg:text-2xl font-bold py-5 lg:py-6 px-16 lg:px-20 rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2d4240]"
                 >
                   {isLoading ? 'Generating Plan...' : 'Generate A Plan'}
@@ -466,98 +513,153 @@ export default function BrocoliPage() {
           </div>
         </>
       ) : (
-        <div className="w-full max-w-sm md:max-w-lg lg:max-w-xl space-y-6 md:space-y-8">
-          {/* Plan Step */}
-          <div className="flex flex-row items-start justify-between w-full">
-            <div className="flex flex-col items-start gap-1 md:gap-2">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold leading-none text-[#5B6470]">Plan</h1>
-              <p className="text-lg md:text-xl lg:text-2xl font-semibold text-[#5B6470]">Heaaar me out!</p>
+        <>
+          {/* Mobile Layout */}
+          <div className="w-full max-w-sm space-y-6 md:hidden">
+            {/* Plan Header with Speech Bubble */}
+            <div className="relative flex items-center justify-between">
+              {/* Speech Bubble */}
+              <div className="relative bg-white rounded-2xl p-6 shadow-md mr-4 speech-bubble">
+                <div className="flex flex-col">
+                  <h1 className="text-4xl font-extrabold leading-none text-[#5B6470]">Plan</h1>
+                  <p className="text-base font-semibold text-[#5B6470] mt-1">Heaaar me out!</p>
+                </div>
+                {/* Speech bubble tail */}
+                <div className="absolute top-1/2 right-0 transform translate-x-full -translate-y-1/2">
+                  <div className="w-0 h-0 border-l-[16px] border-l-white border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent"></div>
+                </div>
+              </div>
+              {/* Broccoli */}
+              <div className="w-16 h-16 flex-shrink-0">
+                <PlanBroccoli />
+              </div>
             </div>
 
-            <div className="flex flex-col items-end gap-1">
-                <div className="w-[80px] h-[83px] md:w-[100px] md:h-[104px] lg:w-[120px] lg:h-[125px]">
-                  <PlanBroccoli />
-                </div>         
+            {/* Description Card */}
+            <div className="w-full bg-white rounded-2xl p-6 shadow-md">
+              <p className="font-semibold text-[#5B6470] text-lg leading-relaxed text-center">{groceryPlan?.summary || "Grocery plan for bulking up with a balanced mix of quality and value"}</p>
             </div>
+
+            {/* Total Cost */}
+            <div className="flex items-baseline gap-4">
+              <span className="text-6xl font-extrabold text-[#5B6470]">${groceryPlan?.totalCost || budget}</span>
+              <span className="text-xl font-semibold text-[#5B6470]">Total Cost</span>
+            </div>
+
+            <div className="w-full flex flex-col space-y-4 max-h-[50vh] overflow-y-auto">
+              {isFetchingImages && (
+                <div className="w-full flex justify-center items-center my-4">
+                  <span className="text-[#5B6470] font-bold text-lg">Fetching grocery images...</span>
+                </div>
+              )}
+
+              {groceryPlan?.ingredients && groceryPlan.ingredients.length > 0 && (
+                <div className="w-full bg-white rounded-2xl p-6 shadow-md">
+                  <div className="space-y-4">
+                    {groceryPlan.ingredients.map((ingredient, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <img src={ingredient.img} alt={ingredient.name} className="w-12 h-12 rounded-lg object-contain bg-gray-100" />
+                          <div>
+                            <p className="text-sm font-medium text-[#5B6470] mb-1">No Name's</p>
+                            <p className="font-semibold text-black text-base">{ingredient.name}</p>
+                            <p className="text-sm text-[#5B6470]">{ingredient.quantity} • {ingredient.category}</p>
+                          </div>
+                        </div>
+                        <span className="font-bold text-black text-lg">${ingredient.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Edit Grocery List Button */}
+            {groceryPlan && !isFetchingImages && (
+              <button
+                className="w-full bg-[#4F9A85] text-white text-xl font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-transform hover:bg-[#3d7a68]"
+                onClick={() => {
+                  localStorage.setItem('groceryPlan', JSON.stringify(groceryPlan));
+                  router.push(`/plan?prompt=${encodeURIComponent(prompt)}`);
+                }}
+              >
+                Edit Grocery List
+              </button>
+            )}
           </div>
 
-          
-          <div className="w-full flex flex-col space-y-4 md:space-y-6 max-h-[60vh] md:max-h-[70vh] overflow-y-auto">
-            <div className="flex items-end gap-2 md:gap-4 mb-4 md:mb-6">
-              <span className="text-7xl md:text-8xl lg:text-9xl font-extrabold text-[#5B6470]">${groceryPlan?.totalCost || budget}</span>
-              <span className="text-lg md:text-xl lg:text-2xl font-bold text-[#5B6470] mb-1">Total Cost</span>
-            </div>
-            
-            <div className="w-full min-h-[150px] md:min-h-[180px] lg:min-h-[200px] bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-md mb-4 flex items-center justify-center">
-              <p className="font-extrabold text-black text-xl md:text-2xl lg:text-3xl text-center leading-relaxed">{groceryPlan?.summary || "Your grocery trip is going to be protein filled, with vegetables and meat"}</p>
-            </div>
-
-            {isFetchingImages && (
-              <div className="w-full flex justify-center items-center my-4 md:my-6">
-                <span className="text-[#5B6470] font-bold text-lg md:text-xl lg:text-2xl">Fetching grocery images...</span>
-              </div>
-            )}
-
-            {groceryPlan?.ingredients && groceryPlan.ingredients.length > 0 && (
-              <div className="w-full bg-white rounded-2xl p-4 shadow-md mb-4">
-                <h3 className="font-bold text-black mb-3">Ingredients:</h3>
-                <div className="space-y-2">
-                  {groceryPlan.ingredients.map((ingredient, index) => (
-                    <div key={index} className="flex justify-between items-center border-b border-gray-200 pb-2">
-                      <div className="flex items-center gap-3">
-                        <img src={ingredient.img} alt={ingredient.name} className="w-10 h-10 rounded object-contain bg-gray-100" />
-                        <div>
-                          <p className="font-semibold text-black">{ingredient.name}</p>
-                          <p className="text-sm text-gray-600">{ingredient.quantity} • {ingredient.category}</p>
+          {/* Desktop Layout */}
+          <div className="hidden md:flex w-full max-w-7xl mx-auto gap-8 lg:gap-12">
+            {/* Left Column - Ingredients List */}
+            <div className="flex-1 max-w-md">
+              {groceryPlan?.ingredients && groceryPlan.ingredients.length > 0 && (
+                <div className="w-full bg-white rounded-2xl p-6 shadow-md max-h-[70vh] overflow-y-auto">
+                  <div className="space-y-4">
+                    {groceryPlan.ingredients.map((ingredient, index) => (
+                      <div key={index} className="flex justify-between items-center py-2">
+                        <div className="flex items-center gap-4">
+                          <img src={ingredient.img} alt={ingredient.name} className="w-14 h-14 rounded-lg object-contain bg-gray-100" />
+                          <div>
+                            <p className="text-sm font-medium text-[#5B6470] mb-1">No Name's</p>
+                            <p className="font-semibold text-black text-lg">{ingredient.name}</p>
+                            <p className="text-sm text-[#5B6470]">{ingredient.quantity} • {ingredient.category}</p>
+                          </div>
                         </div>
+                        <span className="font-bold text-black text-xl">${ingredient.price}</span>
                       </div>
-                      <span className="font-bold text-black">${ingredient.price}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {groceryPlan?.tips && groceryPlan.tips.length > 0 && (
-              <div className="w-full bg-white rounded-2xl p-4 shadow-md mb-4">
-                <h3 className="font-bold text-black mb-2">Tips:</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  {groceryPlan.tips.map((tip, index) => (
-                    <li key={index} className="text-black text-sm">{tip}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="relative mb-4">
-              <div className="absolute right-0 bottom-0">
-                <div style={{ width: '80px', height: '83px' }}>
+            {/* Right Column - Plan Summary */}
+            <div className="flex-1 max-w-md space-y-8">
+              {/* Plan Header with Speech Bubble */}
+              <div className="relative flex items-center justify-between">
+                {/* Speech Bubble */}
+                <div className="relative bg-white rounded-2xl p-8 shadow-md mr-6">
+                  <div className="flex flex-col">
+                    <h1 className="text-5xl font-extrabold leading-none text-[#5B6470]">Plan</h1>
+                    <p className="text-lg font-semibold text-[#5B6470] mt-2">Heaaar me out!</p>
+                  </div>
+                  {/* Speech bubble tail */}
+                  <div className="absolute top-1/2 right-0 transform translate-x-full -translate-y-1/2">
+                    <div className="w-0 h-0 border-l-[20px] border-l-white border-t-[15px] border-t-transparent border-b-[15px] border-b-transparent"></div>
+                  </div>
+                </div>
+                {/* Broccoli */}
+                <div className="w-20 h-20 flex-shrink-0">
                   <PlanBroccoli />
                 </div>
               </div>
-            </div>
-            
-            <div className="flex flex-col gap-3 md:gap-4">
-              <button
-                onClick={() => setStep(1)}
-                className="w-full bg-[#375654] text-white text-lg md:text-xl lg:text-2xl font-bold py-3 md:py-4 lg:py-5 rounded-full shadow-lg active:scale-95 transition-transform hover:bg-[#2d4240]"
-              >
-                Redo Plan
-              </button>
+
+              {/* Total Cost */}
+              <div className="flex items-baseline gap-6">
+                <span className="text-7xl font-extrabold text-[#5B6470]">${groceryPlan?.totalCost || budget}</span>
+                <span className="text-2xl font-semibold text-[#5B6470]">Total Cost</span>
+              </div>
+
+              {/* Description Card */}
+              <div className="w-full bg-white rounded-2xl p-8 shadow-md">
+                <p className="font-semibold text-[#5B6470] text-xl leading-relaxed">{groceryPlan?.summary || "Grocery plan for bulking up with a balanced mix of quality and value"}</p>
+              </div>
+
+              {/* Generate A Plan Button */}
               {groceryPlan && !isFetchingImages && (
                 <button
-                  className="w-full bg-[#375654] text-white text-lg md:text-xl lg:text-2xl font-bold py-3 md:py-4 lg:py-5 rounded-full shadow-lg active:scale-95 transition-transform hover:bg-[#2d4240]"
+                  className="w-full bg-[#4F9A85] text-white text-2xl font-bold py-5 rounded-2xl shadow-lg active:scale-95 transition-transform hover:bg-[#3d7a68]"
                   onClick={() => {
                     localStorage.setItem('groceryPlan', JSON.stringify(groceryPlan));
                     router.push(`/plan?prompt=${encodeURIComponent(prompt)}`);
                   }}
                 >
-                  Generate Grocery List
+                  Generate A Plan
                 </button>
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
       </div>
     </div>

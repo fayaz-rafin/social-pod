@@ -47,7 +47,7 @@ export default function Home() {
             Get Started
           </button>
           <Link href="/auth/signup" className="text-[#375654] font-bold text-lg underline hover:text-[#2d4240] mb-6">
-            or create account
+            or create an account
           </Link>
           
           {/* Legal Links */}

@@ -1,15 +1,15 @@
-# 🥦 SocialPod - AI-Powered Grocery Planning App
+# 🥦 Broccoli - AI-Powered Grocery Planning App
 
 **A Next.js 15 social grocery planning application with AI integration, gamification, and real-time collaboration features.**
 
-![SocialPod Banner](https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js)
+![Broccoli Banner](https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![Supabase](https://img.shields.io/badge/Supabase-2.50.2-3ECF8E?style=for-the-badge&logo=supabase)
 
 ## 🚀 Live Demo
+[**🌐 View Live Application**](https://socialpod.vercel.app)
 
-**[Demo Link Coming Soon]**
 
 ## 📱 Features
 
@@ -69,7 +69,7 @@
 
 ### Project Structure
 ```
-socialpod/
+broccoli/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API routes
 │   ├── auth/              # Authentication pages
@@ -140,8 +140,8 @@ socialpod/
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/socialpod.git
-cd socialpod
+git clone https://github.com/yourusername/broccoli.git
+cd broccoli
 ```
 
 2. **Install dependencies**
@@ -260,4 +260,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ using Next.js, TypeScript, and TailwindCSS**
 
-*"Shopping made fun" - SocialPod*
+*"Shopping made fun" - Broccoli*

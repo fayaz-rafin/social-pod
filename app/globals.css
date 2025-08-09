@@ -1,21 +1,6 @@
 @import "tailwindcss";
 
-/* Helvetica Font Faces */
-@font-face {
-  font-family: 'Helvetica';
-  src: url('/Helvetica.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Helvetica';
-  src: url('/Helvetica-Bold.woff') format('woff');
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
+/* Using Lexend from Google Fonts via Next.js font optimization */
 
 :root {
   --background: #ffffff;
@@ -25,8 +10,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Helvetica', Arial, "Segoe UI", sans-serif;
-  --font-mono: 'Helvetica', Arial, "Segoe UI", sans-serif;
+  --font-sans: 'Lexend', Arial, "Segoe UI", sans-serif;
+  --font-mono: 'Lexend', Arial, "Segoe UI", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -39,5 +24,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Helvetica', Arial, "Segoe UI", sans-serif;
+  font-family: 'Lexend', Arial, "Segoe UI", sans-serif;
 }

@@ -579,8 +579,9 @@ export default function BrocoliPage() {
               <button
                 className="w-full bg-[#4F9A85] text-white text-xl font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-transform hover:bg-[#3d7a68]"
                 onClick={() => {
-                  localStorage.setItem('groceryPlan', JSON.stringify(groceryPlan));
-                  router.push(`/plan?prompt=${encodeURIComponent(prompt)}`);
+                  const planWithBudget = { ...groceryPlan, budget: budget };
+                  localStorage.setItem('groceryPlan', JSON.stringify(planWithBudget));
+                  router.push(`/plan?prompt=${encodeURIComponent(prompt)}&budget=${budget}`);
                 }}
               >
                 Edit Grocery List
@@ -650,8 +651,9 @@ export default function BrocoliPage() {
                 <button
                   className="w-full bg-[#4F9A85] text-white text-2xl font-bold py-5 rounded-2xl shadow-lg active:scale-95 transition-transform hover:bg-[#3d7a68]"
                   onClick={() => {
-                    localStorage.setItem('groceryPlan', JSON.stringify(groceryPlan));
-                    router.push(`/plan?prompt=${encodeURIComponent(prompt)}`);
+                    const planWithBudget = { ...groceryPlan, budget: budget };
+                    localStorage.setItem('groceryPlan', JSON.stringify(planWithBudget));
+                    router.push(`/plan?prompt=${encodeURIComponent(prompt)}&budget=${budget}`);
                   }}
                 >
                   Generate A Plan

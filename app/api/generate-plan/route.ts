@@ -193,7 +193,7 @@ Budget Level: ${budget <= 30 ? 'Low - Focus on budget-friendly essentials' : bud
 Create a grocery plan JSON response that matches my goal and budget level.`
         }
       ],
-      model: "llama3-8b-8192",
+      model: "llama-3.1-8b-instant",
       temperature: 0.3,
       max_tokens: 800,
     });

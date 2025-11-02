@@ -32,3 +32,28 @@ export const groceryHistory = pgTable('grocery_history', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+// Broccoli Pet table
+export const petTable = pgTable('pet_table', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().unique(), // One pet per user
+  petName: varchar('pet_name', { length: 100 }).default('Broccoli'),
+  petType: varchar('pet_type', { length: 50 }).default('broccoli'),
+  
+  // State
+  hearts: integer('hearts').default(6).notNull(),
+  maxHearts: integer('max_hearts').default(6).notNull(),
+  level: integer('level').default(0),
+  experience: integer('experience').default(0),
+  
+  // Care tracking
+  lastFedAt: timestamp('last_fed_at'),
+  lastWateredAt: timestamp('last_watered_at'),
+  lastFertilizedAt: timestamp('last_fertilized_at'),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+
+
